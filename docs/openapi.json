@@ -1,0 +1,22 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+      "title": "pop quizz linux api",
+      "description": "",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000",
+        "description": ""
+      }
+    ],
+    "tags": [],
+    "paths": {},
+    "components": {
+      "securitySchemes": {},
+      "parameters": {},
+      "responses": {},
+      "schemas": {}
+    }
+  }

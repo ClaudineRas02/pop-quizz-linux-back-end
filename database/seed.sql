@@ -1,0 +1,9 @@
+-- Donnees de test pour le projet POP QUIZZ.
+-- A executer apres database/schema.sql.
+--
+-- Commande depuis la racine du projet :
+-- psql "postgresql://pop_quizz_user:1234@localhost:5432/pop_quizz" -f database/seed.sql
+--
+-- Dans le shell psql deja connecte :
+-- \i database/seeds.sql
+--
