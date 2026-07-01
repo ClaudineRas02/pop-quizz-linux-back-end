@@ -1,22 +1,658 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-      "title": "pop quizz linux api",
-      "description": "",
-      "version": "1.0.0"
-    },
-    "servers": [
-      {
-        "url": "http://localhost:3000",
-        "description": ""
+  "openapi": "3.0.3",
+  "info": {
+    "title": "pop quizz linux api",
+    "description": "API du jeu de quiz en temps reel.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Serveur local"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Games",
+      "description": "Gestion des parties"
+    }
+  ],
+  "paths": {
+    "/api/admin/game/list": {
+      "get": {
+        "tags": ["Games"],
+        "summary": "Lister toutes les parties",
+        "responses": {
+          "200": {
+            "description": "Liste des parties",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameListResponse"
+                }
+              }
+            }
+          }
+        }
       }
-    ],
-    "tags": [],
-    "paths": {},
-    "components": {
-      "securitySchemes": {},
-      "parameters": {},
-      "responses": {},
-      "schemas": {}
+    },
+    "/api/admin/game/view/{gameId}": {
+      "get": {
+        "tags": ["Games"],
+        "summary": "Recuperer une partie par identifiant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Partie trouvee",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/game/create": {
+      "post": {
+        "tags": ["Games"],
+        "summary": "Creer une partie",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Partie creee",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/game/update/{gameId}": {
+      "patch": {
+        "tags": ["Games"],
+        "summary": "Mettre a jour une partie",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GameUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Partie mise a jour",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/game/delete/{gameId}": {
+      "delete": {
+        "tags": ["Games"],
+        "summary": "Supprimer une partie",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Partie supprimee"
+          }
+        }
+      }
+    },
+    "/api/admin/game/{gameId}/start": {
+      "post": {
+        "tags": ["Games"],
+        "summary": "Demarrer une partie",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Partie demarree",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameStartResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/game/{gameId}/end": {
+      "post": {
+        "tags": ["Games"],
+        "summary": "Terminer une partie",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Partie terminee",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameEndResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/game/{gameId}/results": {
+      "get": {
+        "tags": ["Games"],
+        "summary": "Consulter les resultats finaux d'une partie",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          },
+          {
+            "$ref": "#/components/parameters/PlayerIdQuery"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultats de la partie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResultsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/game/{gameId}/join": {
+      "post": {
+        "tags": ["Games"],
+        "summary": "Rejoindre une partie",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinGameRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Joueur ajoute a la partie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParticipantResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/game/{gameId}/open-next-question": {
+      "post": {
+        "tags": ["Games"],
+        "summary": "Ouvrir la prochaine question",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Question ouverte",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenQuestionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/game/{gameId}/questions/{questionId}/submit-answer": {
+      "post": {
+        "tags": ["Games"],
+        "summary": "Soumettre une reponse a une question",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          },
+          {
+            "$ref": "#/components/parameters/QuestionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitAnswerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reponse enregistree",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitAnswerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/game/{gameId}/questions/{questionId}/stats": {
+      "get": {
+        "tags": ["Games"],
+        "summary": "Obtenir les statistiques d'une question",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          },
+          {
+            "$ref": "#/components/parameters/QuestionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistiques de la question",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionStatsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/game/{gameId}/leaderboard": {
+      "get": {
+        "tags": ["Games"],
+        "summary": "Obtenir le classement d'une partie",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Classement de la partie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "GameId": {
+        "name": "gameId",
+        "in": "path",
+        "required": true,
+        "description": "Identifiant de la partie",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "QuestionId": {
+        "name": "questionId",
+        "in": "path",
+        "required": true,
+        "description": "Identifiant de la question",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "PlayerIdQuery": {
+        "name": "playerId",
+        "in": "query",
+        "required": true,
+        "description": "Identifiant du joueur",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    },
+    "schemas": {
+      "Game": {
+        "type": "object",
+        "properties": {
+          "gameId": { "type": "integer" },
+          "title": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["waiting", "running", "finished"]
+          },
+          "createdBy": { "type": ["integer", "null"] },
+          "totalQuestions": { "type": "integer" },
+          "startTime": { "type": ["string", "null"], "format": "date-time" },
+          "endTime": { "type": ["string", "null"], "format": "date-time" },
+          "createdAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "GameCreateRequest": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["waiting", "running", "finished"],
+            "default": "waiting"
+          },
+          "totalQuestions": { "type": "integer", "minimum": 0 },
+          "createdBy": { "type": ["integer", "null"] }
+        }
+      },
+      "GameUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["waiting", "running", "finished"]
+          },
+          "totalQuestions": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "JoinGameRequest": {
+        "type": "object",
+        "required": ["playerId"],
+        "properties": {
+          "playerId": { "type": "integer" }
+        }
+      },
+      "SubmitAnswerRequest": {
+        "type": "object",
+        "required": ["playerId", "answer"],
+        "properties": {
+          "playerId": { "type": "integer" },
+          "answer": { "type": "string" },
+          "answerValue": { "type": "string" }
+        }
+      },
+      "GameListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Game"
+            }
+          }
+        }
+      },
+      "GameResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Game"
+          }
+        }
+      },
+      "Participant": {
+        "type": "object",
+        "properties": {
+          "contestPlayerId": { "type": "integer" },
+          "gameId": { "type": "integer" },
+          "playerId": { "type": "integer" },
+          "joinedAt": { "type": ["string", "null"], "format": "date-time" },
+          "isConnected": { "type": "boolean" },
+          "lastSeen": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "ParticipantResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "participant": {
+                "$ref": "#/components/schemas/Participant"
+              },
+              "event": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "LeaderboardRow": {
+        "type": "object",
+        "properties": {
+          "gameId": { "type": "integer" },
+          "playerId": { "type": "integer" },
+          "username": { "type": "string" },
+          "avatarUrl": { "type": ["string", "null"] },
+          "score": { "type": "number" },
+          "correctAnswers": { "type": "integer" },
+          "wrongAnswers": { "type": "integer" },
+          "firstBloodCount": { "type": "integer" },
+          "avgResponseTime": { "type": "number" },
+          "rank": { "type": "integer" }
+        }
+      },
+      "LeaderboardResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardRow"
+            }
+          }
+        }
+      },
+      "QuestionStats": {
+        "type": "object",
+        "properties": {
+          "contestQuestionId": { "type": "integer" },
+          "gameId": { "type": "integer" },
+          "questionId": { "type": "integer" },
+          "roundNumber": { "type": "integer" },
+          "orderIndex": { "type": "integer" },
+          "status": { "type": "string" },
+          "openedAt": { "type": ["string", "null"], "format": "date-time" },
+          "closedAt": { "type": ["string", "null"], "format": "date-time" },
+          "statement": { "type": "string" },
+          "points": { "type": "number" },
+          "duration": { "type": "number" },
+          "totalAnswers": { "type": "integer" },
+          "correctAnswers": { "type": "integer" },
+          "incorrectAnswers": { "type": "integer" },
+          "firstBloodCount": { "type": "integer" },
+          "avgResponseTime": { "type": "number" },
+          "correctRate": { "type": "number" },
+          "incorrectRate": { "type": "number" }
+        }
+      },
+      "QuestionStatsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/QuestionStats"
+          }
+        }
+      },
+      "SubmitAnswerResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "accepted": { "type": "boolean" },
+              "answer": { "type": ["object", "null"] },
+              "progress": {
+                "type": "object",
+                "properties": {
+                  "answeredCount": { "type": "integer" },
+                  "totalParticipants": { "type": "integer" }
+                }
+              },
+              "correctAnswer": { "type": ["string", "null"] },
+              "event": { "type": "object" }
+            }
+          }
+        }
+      },
+      "GameResultsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "countdownSeconds": { "type": "integer" },
+              "revealSchedule": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "leaderboard": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/LeaderboardRow"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GameStartResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "game": {
+                "$ref": "#/components/schemas/Game"
+              },
+              "event": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "GameEndResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "game": {
+                "$ref": "#/components/schemas/Game"
+              },
+              "event": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "OpenQuestionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "blockedByOpenQuestion": { "type": "boolean" },
+              "question": {
+                "type": "object",
+                "properties": {
+                  "contestQuestionId": { "type": "integer" },
+                  "gameId": { "type": "integer" },
+                  "questionId": { "type": "integer" },
+                  "statement": { "type": "string" },
+                  "category": { "type": "string" },
+                  "type": { "type": "string" },
+                  "duration": { "type": "number" },
+                  "points": { "type": "number" },
+                  "explanation": { "type": ["string", "null"] },
+                  "progress": {
+                    "type": "object",
+                    "properties": {
+                      "answeredCount": { "type": "integer" },
+                      "totalParticipants": { "type": "integer" }
+                    }
+                  }
+                }
+              },
+              "event": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
     }
   }
+}
