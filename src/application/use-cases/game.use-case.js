@@ -13,7 +13,18 @@ export function createGameUseCases({ gameRepository }) {
   return {
     async createGame(gameData) {
       const verifiedGameData = verifyGameData(gameData);
-      return await gameRepository.create(verifiedGameData);
+      const game = await gameRepository.create(verifiedGameData);
+
+      return {
+        game,
+        event: {
+          name: "created-game",
+          room: `lobby`,
+          payload: {
+            game,
+          },
+        },
+      };
     },
 
     async listGames() {
