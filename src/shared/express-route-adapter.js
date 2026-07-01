@@ -16,7 +16,18 @@ export function adaptRoute(controllerAction) {
           return res.download(result.filePath);
         }
   
-        res.status(result.statusCode).json(result.body);
+        const io = req.app?.locals?.io;
+        const event = result?.body?.data?.event;
+
+        if (event && io) {
+          io.to(event.room).emit(event.name, event.payload);
+        }
+
+        if (result.statusCode === 204) {
+          return res.status(204).end();
+        }
+
+        return res.status(result.statusCode).json(result.body);
       } catch (error) {
         next(error);
       }

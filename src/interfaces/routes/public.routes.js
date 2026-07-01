@@ -6,5 +6,9 @@ import { lazyRouteMount } from "../../shared/lazy-route-mount.js";
 export function createPublicRoutes(modules) {
   const router = Router();
 
+  router.use(
+    "/game",
+    lazyRouteMount(() => modules.game.getPublicRoutes()),
+  );
   return router;
 }

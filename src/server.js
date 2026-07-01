@@ -21,13 +21,22 @@ const io = new Server(server, {
   },
 });
 
-// Socket events
+app.locals.io = io;
+
+// Socket events pour les clients connectés. Ces événements sont déclenchés par les actions des joueurs dans le jeu (ex: rejoindre un jeu, répondre à une question, etc.).
 io.on("connection", (socket) => {
   console.log(`Client connecté: ${socket.id}`);
 
-  // Example: join a live contest room (future CP feature)
+  // Join the Socket.IO rooms used by the game HTTP events.
+  // action : join-contest, join-game, disconnect appelé quand frontend fait un socket.emit("join-contest", contestId) ou socket.emit("join-game", gameId)
   socket.on("join-contest", (contestId) => {
     socket.join(contestId);
+    socket.join(`game:${contestId}`);
+  });
+
+  socket.on("join-game", (gameId) => {
+    socket.join(gameId);
+    socket.join(`game:${gameId}`);
   });
 
   socket.on("disconnect", () => {
