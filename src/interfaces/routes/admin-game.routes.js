@@ -5,7 +5,7 @@ import { requireAuth } from "../../infrastructure/http/middlewares/auth.middlewa
 export function createAdminGameRoutes(gameController) {
   const router = Router();
 
-  //   router.use(requireAuth);
+  router.use(requireAuth);
   //   router.use(requireRole("admin"));
   router.get("/list", adaptRoute(gameController.listGames));
   router.get("/view/:gameId", adaptRoute(gameController.getGameById));

@@ -18,6 +18,11 @@ export function createApplicationModules() {
       const { createGameModule } = await import("./game.module.js");
       return createGameModule();
     }),
+
+    player: createLazyModule(async () => {
+      const { createPlayerModule } = await import("./player.module.js");
+      return createPlayerModule();
+    }),
   };
 }
 

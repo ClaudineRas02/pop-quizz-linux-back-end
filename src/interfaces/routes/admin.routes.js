@@ -10,9 +10,15 @@ export function createAdminRoutes(modules) {
     "/admin",
     lazyRouteMount(() => modules.adminuser.getAdminRoutes()),
   );
+
   router.use(
     "/game",
     lazyRouteMount(() => modules.game.getAdminRoutes()),
+  );
+
+  router.use(
+    "/players",
+    lazyRouteMount(() => modules.player.getAdminRoutes()),
   );
 
   return router;
