@@ -4,9 +4,9 @@
 export function createApplicationModules() {
   return {
     //crud pour user admin
-    adminuser: createLazyModule(async () => {
-      const { createAdminuserModule } = await import("./admin.module.js");
-      return createAdminuserModule();
+    admin: createLazyModule(async () => {
+      const { createAdminModule } = await import("./admin.module.js");
+      return createAdminModule();
     }),
 
     auth: createLazyModule(async () => {
@@ -40,12 +40,12 @@ function createLazyModule(loadModule) {
   return {
     async getPublicRoutes() {
       const module = await getModule();
-      return module.publicRoutes;
+      return module.publicRoutes || null;
     },
 
     async getAdminRoutes() {
       const module = await getModule();
-      return module.adminRoutes;
+      return module.adminRoutes || null;
     },
   };
 }

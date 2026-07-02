@@ -1,55 +1,68 @@
 import { Router } from "express";
 import { adaptRoute } from "../../shared/express-route-adapter.js";
 import { requireAuth } from "../../infrastructure/http/middlewares/auth.middleware.js";
+import { requireAdmin } from "../../infrastructure/http/middlewares/admin-auth.middleware.js";
 
-/**
- * Routes admin.
- * Toutes les routes sont protégées par auth + role admin.
- */
 export function createAdminRoutes(adminController) {
   const router = Router();
 
-  // Protection globale : utilisateur connecté + role admin uniquement
-  router.use(requireAuth);
-
   /**
-   * GET /api/admin
-   * Liste tous les admins
+   * PUBLIC ADMIN AUTH ROUTES
+   * (pas besoin de token)
    */
-  router.get("/", adaptRoute(adminController.listAdmins));
 
-  /**
-   * GET /api/admin/:adminId
-   */
-  router.get("/:adminId", adaptRoute(adminController.getAdminById));
+  router.post(
+    "/register",
+    adaptRoute(adminController.register)
+  );
 
-  /**
-   * GET /api/admin/email/:email
-   */
-  router.get("/email/:email", adaptRoute(adminController.getAdminByEmail));
-
-  /**
-   * POST /api/admin
-   */
-  router.post("/", adaptRoute(adminController.createAdmin));
-
-  /**
-   * PATCH /api/admin/:adminId
-   */
-  router.patch("/:adminId", adaptRoute(adminController.updateAdmin));
-
-  /**
-   * PATCH /api/admin/:adminId/password
-   */
-  router.patch(
-    "/:adminId/password",
-    adaptRoute(adminController.changeAdminPassword),
+  router.post(
+    "/login",
+    adaptRoute(adminController.login)
   );
 
   /**
-   * DELETE /api/admin/:adminId
+   * PROTECTED ADMIN ROUTES
+   * JWT + role admin obligatoire
    */
-  router.delete("/:adminId", adaptRoute(adminController.deleteAdmin));
+  router.use(requireAuth);
+  router.use(requireAdmin);
+
+  /**
+   * GET current admin
+   * GET /admin/me
+   */
+  router.get(
+    "/me",
+    adaptRoute(adminController.getMe)
+  );
+
+  /**
+   * LIST ALL ADMINS
+   * GET /admin
+   */
+  router.get(
+    "/list",
+    adaptRoute(adminController.getAdmins)
+  );
+
+  /**
+   * GET admin by id
+   * GET /admin/:adminId
+   */
+  router.get(
+    "/:adminId",
+    adaptRoute(adminController.getAdminById)
+  );
+
+  /**
+   * DELETE admin
+   * DELETE /admin/:adminId
+   */
+  router.delete(
+    "/:adminId",
+    adaptRoute(adminController.deleteAdmin)
+  );
 
   return router;
 }

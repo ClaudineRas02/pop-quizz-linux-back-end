@@ -17,5 +17,6 @@ export function createAuthModule() {
   
     return {
       publicRoutes: createAuthRoutes(playerController),
+      adminRoutes: null,
     };
   }

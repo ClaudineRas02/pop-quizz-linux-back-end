@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { adaptRoute } from "../../shared/express-route-adapter.js";
 import { requireAuth } from "../../infrastructure/http/middlewares/auth.middleware.js";
+import { requireAdmin } from "../../infrastructure/http/middlewares/admin-auth.middleware.js";
 
 export function createAdminPlayerRoutes(playerController) {
   const router = Router();
 
   router.use(requireAuth);
-  // router.use(requireRole("admin"));
+  router.use(requireAdmin);
 
   /**
    * LIST ALL PLAYERS

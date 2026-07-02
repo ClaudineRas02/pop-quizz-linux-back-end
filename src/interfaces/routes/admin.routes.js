@@ -7,8 +7,8 @@ export function createAdminRoutes(modules) {
   const router = Router();
 
   router.use(
-    "/admin",
-    lazyRouteMount(() => modules.adminuser.getAdminRoutes()),
+    "/",
+    lazyRouteMount(() => modules.admin.getAdminRoutes()),
   );
 
   router.use(

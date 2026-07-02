@@ -82,10 +82,11 @@ export function createPlayerUseCases({ playerRepository }) {
         {
           playerId: player.playerId,
           email: player.email,
+          role: "player",
         },
         process.env.JWT_SECRET,
         {
-          expiresIn: "24h",
+          expiresIn: process.env.ACCESS_TOKEN_EXP || "24h",
         },
       );
 

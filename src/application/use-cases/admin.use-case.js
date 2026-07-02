@@ -1,123 +1,134 @@
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
 import { BusinessError } from "../../domain/errors/business-error.js";
 import {
-  verifyAdmin,
-  verifyAdminUpdate,
-  normalizeAdminEmail,
+  verifyLoginData,
+  verifyRegisterData,
 } from "../../domain/entities/admin.js";
-import bcrypt from "bcrypt";
 
-/**
- * Regroupe les actions possibles autour des admins.
- * Le repository est injecté pour garder une persistance interchangeable.
- */
 export function createAdminUseCases({ adminRepository }) {
   return {
-    /**
-     * Retourne tous les admins.
-     */
-    listAdmins() {
-      return adminRepository.findAll();
-    },
+    async register(adminData) {
+      const verifiedAdmin = verifyRegisterData(adminData);
 
-    /**
-     * Retourne un admin par ID.
-     */
-    async getAdminById(adminId) {
-      const admin = await adminRepository.findById(adminId);
-
-      if (!admin) {
-        throw new BusinessError("L'admin demandé n'existe pas.", 404);
-      }
-
-      return admin;
-    },
-
-    /**
-     * Retourne un admin par email.
-     */
-    async getAdminByEmail(email) {
-      const admin = await adminRepository.findByEmail(
-        normalizeAdminEmail(email),
+      const emailExists = await adminRepository.findByEmail(
+        verifiedAdmin.email,
       );
 
-      if (!admin) {
-        throw new BusinessError("L'admin demandé n'existe pas.", 404);
-      }
-
-      return admin;
-    },
-
-    /**
-     * Création d’un admin.
-     */
-    async createAdmin(payload) {
-      const admin = verifyAdmin(payload);
-
-      const existing = await adminRepository.findByEmail(admin.email);
-
-      if (existing) {
+      if (emailExists) {
         throw new BusinessError(
-          "Un admin avec cet email existe déjà.",
+          "Cette adresse email est déjà utilisée.",
           409,
         );
       }
 
-      const passwordHash = await bcrypt.hash(admin.password, 10);
+      const passwordHash = await bcrypt.hash(
+        verifiedAdmin.password,
+        10,
+      );
 
-      return adminRepository.save({
-        email: admin.email,
-        password_hash: passwordHash,
-        role: admin.role,
+      const admin = await adminRepository.create({
+        email: verifiedAdmin.email,
+        passwordHash,
       });
+
+      return {
+        admin: sanitizeAdmin(admin),
+      };
     },
 
-    /**
-     * Mise à jour partielle d’un admin.
-     */
-    async updateAdmin({ adminId, ...payload }) {
-      const update = verifyAdminUpdate(payload);
+    async login(loginData) {
+      const verifiedLogin = verifyLoginData(loginData);
 
-      const updated = await adminRepository.update(adminId, update);
+      const admin = await adminRepository.findByEmail(
+        verifiedLogin.email,
+      );
 
-      if (!updated) {
-        throw new BusinessError("L'admin demandé n'existe pas.", 404);
+      if (!admin) {
+        throw new BusinessError(
+          "Email ou mot de passe incorrect.",
+          401,
+        );
       }
 
-      return updated;
+      const passwordMatches = await bcrypt.compare(
+        verifiedLogin.password,
+        admin.passwordHash,
+      );
+
+      if (!passwordMatches) {
+        throw new BusinessError(
+          "Email ou mot de passe incorrect.",
+          401,
+        );
+      }
+
+      const token = jwt.sign(
+        {
+          adminId: admin.adminId, 
+          email: admin.email,
+          role: "admin",
+        },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: process.env.ACCESS_TOKEN_EXP || "24h",
+        },
+      );
+
+      return {
+        admin: sanitizeAdmin(admin),
+        token,
+      };
     },
 
-    /**
-     * Modification du mot de passe admin.
-     */
-    async changeAdminPassword({ adminId, password }) {
+    async getAllAdmins() {
+      const admins = await adminRepository.findAll();
+      return admins.map(sanitizeAdmin);
+    },
+
+    async getAdminById(adminId) {
+      if (!adminId) {
+        throw new BusinessError("adminId invalide", 400);
+      }
+
       const admin = await adminRepository.findById(adminId);
 
       if (!admin) {
-        throw new BusinessError("L'admin demandé n'existe pas.", 404);
+        throw new BusinessError(
+          "Administrateur introuvable",
+          404,
+        );
       }
 
-      if (!password || password.length < 6) {
-        throw new BusinessError("Mot de passe invalide.", 400);
-      }
-
-      const password_hash = await bcrypt.hash(password, 10);
-
-      await adminRepository.setPasswordHash(adminId, password_hash);
-
-      return true;
+      return sanitizeAdmin(admin);
     },
 
-    /**
-     * Suppression d’un admin.
-     */
     async deleteAdmin(adminId) {
+      if (!adminId) {
+        throw new BusinessError("adminId invalide", 400);
+      }
+
       const deleted = await adminRepository.delete(adminId);
 
       if (!deleted) {
-        throw new BusinessError("L'admin demandé n'existe pas.", 404);
+        throw new BusinessError(
+          "Administrateur introuvable",
+          404,
+        );
       }
 
-      return deleted;
+      return { success: true };
     },
+  };
+}
+
+function sanitizeAdmin(admin) {
+  if (!admin) return null;
+
+  return {
+    adminId: admin.adminId, 
+    email: admin.email,
+    createdAt: admin.createdAt,
   };
 }
