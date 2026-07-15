@@ -15,9 +15,328 @@
     {
       "name": "Games",
       "description": "Gestion des parties"
+    },
+    {
+      "name": "Admins",
+      "description": "Gestion des administrateurs"
+    },
+    {
+      "name": "Players",
+      "description": "Gestion des joueurs"
+    },
+    {
+      "name": "Auth",
+      "description": "Authentification publique"
     }
   ],
   "paths": {
+    "/api/admin/register": {
+      "post": {
+        "tags": ["Admins"],
+        "summary": "Creer un administrateur",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAuthRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Administrateur cree",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminAuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/login": {
+      "post": {
+        "tags": ["Admins"],
+        "summary": "Connexion administrateur",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminAuthRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Administrateur connecte",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminLoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/me": {
+      "get": {
+        "tags": ["Admins"],
+        "summary": "Recuperer l'administrateur courant",
+        "responses": {
+          "200": {
+            "description": "Administrateur courant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/list": {
+      "get": {
+        "tags": ["Admins"],
+        "summary": "Lister tous les administrateurs",
+        "responses": {
+          "200": {
+            "description": "Liste des administrateurs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/{adminId}": {
+      "get": {
+        "tags": ["Admins"],
+        "summary": "Recuperer un administrateur par identifiant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AdminId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Administrateur trouve",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Admins"],
+        "summary": "Supprimer un administrateur",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/AdminId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Administrateur supprime",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/player/list": {
+      "get": {
+        "tags": ["Players"],
+        "summary": "Lister tous les joueurs",
+        "responses": {
+          "200": {
+            "description": "Liste des joueurs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/player/{playerId}": {
+      "get": {
+        "tags": ["Players"],
+        "summary": "Recuperer un joueur par identifiant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PlayerId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Joueur trouve",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/player/{playerId}/avatar": {
+      "patch": {
+        "tags": ["Players"],
+        "summary": "Mettre a jour l'avatar d'un joueur",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PlayerId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlayerAvatarUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Avatar mis a jour",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/player/delete/{playerId}": {
+      "delete": {
+        "tags": ["Players"],
+        "summary": "Supprimer un joueur",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PlayerId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Joueur supprime",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Creer un compte joueur",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlayerRegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Joueur cree",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerAuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Connexion joueur",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlayerLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Joueur connecte",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerLoginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/player/me": {
+      "get": {
+        "tags": ["Players"],
+        "summary": "Recuperer le joueur courant",
+        "responses": {
+          "200": {
+            "description": "Joueur courant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/game/list": {
       "get": {
         "tags": ["Games"],
@@ -352,6 +671,24 @@
   },
   "components": {
     "parameters": {
+      "AdminId": {
+        "name": "adminId",
+        "in": "path",
+        "required": true,
+        "description": "Identifiant de l'administrateur",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "PlayerId": {
+        "name": "playerId",
+        "in": "path",
+        "required": true,
+        "description": "Identifiant du joueur",
+        "schema": {
+          "type": "integer"
+        }
+      },
       "GameId": {
         "name": "gameId",
         "in": "path",
@@ -381,6 +718,160 @@
       }
     },
     "schemas": {
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "success": { "type": "boolean" }
+            }
+          }
+        }
+      },
+      "Admin": {
+        "type": "object",
+        "properties": {
+          "adminId": { "type": "integer" },
+          "email": { "type": "string" },
+          "createdAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "AdminAuthRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "AdminResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Admin"
+          }
+        }
+      },
+      "AdminListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Admin"
+            }
+          }
+        }
+      },
+      "AdminAuthResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "admin": {
+                "$ref": "#/components/schemas/Admin"
+              }
+            }
+          }
+        }
+      },
+      "AdminLoginResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "admin": {
+                "$ref": "#/components/schemas/Admin"
+              },
+              "token": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Player": {
+        "type": "object",
+        "properties": {
+          "playerId": { "type": "integer" },
+          "username": { "type": "string" },
+          "email": { "type": "string" },
+          "avatarUrl": { "type": ["string", "null"] },
+          "createdAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "PlayerRegisterRequest": {
+        "type": "object",
+        "required": ["username", "email", "password"],
+        "properties": {
+          "username": { "type": "string" },
+          "email": { "type": "string" },
+          "password": { "type": "string" },
+          "avatarUrl": { "type": ["string", "null"] }
+        }
+      },
+      "PlayerLoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "PlayerAvatarUpdateRequest": {
+        "type": "object",
+        "required": ["avatarUrl"],
+        "properties": {
+          "avatarUrl": { "type": "string" }
+        }
+      },
+      "PlayerResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/Player"
+          }
+        }
+      },
+      "PlayerListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Player"
+            }
+          }
+        }
+      },
+      "PlayerAuthResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "player": {
+                "$ref": "#/components/schemas/Player"
+              }
+            }
+          }
+        }
+      },
+      "PlayerLoginResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "player": {
+                "$ref": "#/components/schemas/Player"
+              },
+              "token": { "type": "string" }
+            }
+          }
+        }
+      },
       "Game": {
         "type": "object",
         "properties": {
