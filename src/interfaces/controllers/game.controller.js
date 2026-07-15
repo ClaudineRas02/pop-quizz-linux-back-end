@@ -1,4 +1,11 @@
-export function createGameController(gameUseCases) {
+import { ok, created, noContent } from "../utils/success.js";
+
+export function createGameController({
+  gameUseCases,
+  questionUseCases,
+  answerUseCases,
+  leaderboardUseCases,
+}) {
   return {
     async createGame({ body }) {
       const game = await gameUseCases.createGame(body);
@@ -19,7 +26,10 @@ export function createGameController(gameUseCases) {
     },
 
     async updateGame({ params, body }) {
-      const game = await gameUseCases.updateGame(params.id ?? params.gameId, body);
+      const game = await gameUseCases.updateGame(
+        params.id ?? params.gameId,
+        body,
+      );
 
       return ok(game);
     },
@@ -36,79 +46,73 @@ export function createGameController(gameUseCases) {
       return ok(result);
     },
 
-    async endGame({ params }) {
-      const result = await gameUseCases.endGame(params.id ?? params.gameId);
-
-      return ok(result);
-    },
-
     async joinGame({ params, body }) {
       const result = await gameUseCases.joinGame(params.gameId, body);
 
       return created(result);
     },
 
-    async createRound({ params, body }) {
-      const roundQuestions = await gameUseCases.createRound(params.gameId, body);
-
-      return created(roundQuestions);
-    },
-
-    async openNextQuestion({ params }) {
-      const result = await gameUseCases.openNextQuestion(params.gameId);
+    async endGame({ params }) {
+      const result = await gameUseCases.endGame(params.id ?? params.gameId);
 
       return ok(result);
     },
 
+    async openNextQuestion({ params }) {
+      const result = await questionUseCases.openNextQuestion(params.gameId);
+
+      return ok(result);
+    },
+
+    async closeCurrentQuestion({ params }) {
+      const result = await questionUseCases.closeCurrentQuestion(params.gameId);
+
+      return ok(result);
+    },
+
+    async getCurrentQuestionStats({ params }) {
+      const stats = await questionUseCases.getCurrentQuestionStats(params.gameId);
+
+      return ok(stats);
+    },
+
+    async markStatsViewed({ params }) {
+      const question = await questionUseCases.markStatsViewed(params.questionId);
+
+      return ok(question);
+    },
+
     async submitAnswer({ params, body }) {
-      const result = await gameUseCases.submitAnswer(
-        params.gameId,
-        params.questionId,
-        body,
-      );
+      const result = await answerUseCases.submitAnswer({
+        gameId: params.gameId,
+        contestQuestionId: params.questionId,
+        ...body,
+      });
 
       return created(result);
     },
 
     async getQuestionStats({ params }) {
-      const stats = await gameUseCases.getQuestionStats(params.gameId, params.questionId);
+      const stats = await questionUseCases.getQuestionStats(
+        params.gameId,
+        params.questionId,
+      );
 
       return ok(stats);
     },
 
     async getLeaderboard({ params }) {
-      const leaderboard = await gameUseCases.getLeaderboard(params.gameId);
+      const leaderboard = await leaderboardUseCases.getLeaderboard(params.gameId);
 
       return ok(leaderboard);
     },
 
     async getResults({ params, query, body }) {
-      const results = await gameUseCases.getResults(params.gameId, {
+      const results = await leaderboardUseCases.getResults(params.gameId, {
         playerId: query.playerId ?? body?.playerId,
       });
 
       return ok(results);
     },
-  };
-}
-
-function ok(data) {
-  return {
-    statusCode: 200,
-    body: { data },
-  };
-}
-
-function created(data) {
-  return {
-    statusCode: 201,
-    body: { data },
-  };
-}
-
-function noContent() {
-  return {
-    statusCode: 204,
-    body: null,
   };
 }
