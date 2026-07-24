@@ -31,6 +31,40 @@ Le backend utilise Socket.IO – l'instance est attachée à l'app Express (`app
 
 Voir la documentation détaillée sur l'architecture sockets : [docs/socket-architecture.md](docs/socket-architecture.md)
 
+## 🗄️ Importation de la base de données
+
+### 👤 1. Se connecter à PostgreSQL
+
+```bash
+sudo -u postgres psql
+```
+
+### 🔐 2. Créer l'utilisateur et la base de données
+
+> Les informations ci-dessous doivent correspondre aux valeurs définies dans votre fichier `.env`.
+
+```sql
+CREATE USER pop_quizz_user WITH PASSWORD '1234';
+CREATE DATABASE pop_quizz OWNER pop_quizz_user;
+GRANT ALL PRIVILEGES ON DATABASE pop_quizz TO pop_quizz_user;
+```
+
+### 📥 3. Importer le schéma de la base de données
+
+```bash
+psql "postgresql://pop_quizz_user:1234@localhost:5432/pop_quizz" \
+    -f database/schema_update.sql
+```
+
+### 🌱 4. Importer les données initiales (seed)
+
+```bash
+psql "postgresql://pop_quizz_user:1234@localhost:5432/pop_quizz" \
+    -f database/seed.sql
+```
+
+> ✅ Une fois ces étapes terminées, la base de données est prête à être utilisée par l'application.
+
 🚀 **Démarrage rapide**
 
 ```bash
