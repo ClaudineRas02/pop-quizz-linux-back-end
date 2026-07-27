@@ -1,5 +1,8 @@
 import { BusinessError } from "../../domain/errors/business-error.js";
-import { verifyQuestionData, verifyQuestionUpdate } from "../../domain/entities/question.js";
+import {
+  verifyQuestionData,
+  verifyQuestionUpdate,
+} from "../../domain/entities/question.js";
 import { scheduleQuestionTimeout } from "../../shared/utils/question-timer.service.js";
 
 export function createQuestionUseCases({
@@ -36,7 +39,10 @@ export function createQuestionUseCases({
       const verifiedData = verifyQuestionUpdate(updateData);
       const updated = await questionRepository.update(questionId, verifiedData);
       if (!updated) {
-        throw new BusinessError("Impossible de mettre à jour la question.", 500);
+        throw new BusinessError(
+          "Impossible de mettre à jour la question.",
+          500,
+        );
       }
       return updated;
     },
@@ -71,7 +77,8 @@ export function createQuestionUseCases({
         );
       }
 
-      const currentQuestion = await questionRepository.findOpenedQuestion(gameId);
+      const currentQuestion =
+        await questionRepository.findOpenedQuestion(gameId);
 
       if (currentQuestion) {
         throw new BusinessError(
@@ -99,7 +106,9 @@ export function createQuestionUseCases({
         event: {
           name: "question:opened",
           room: `game:${gameId}`,
-          payload: { question: openedQuestion },
+          payload: {
+            question: openedQuestion,
+          },
         },
       };
     },
@@ -118,7 +127,8 @@ export function createQuestionUseCases({
         );
       }
 
-      const openedquestion = await questionRepository.findOpenedQuestion(gameId);
+      const openedquestion =
+        await questionRepository.findOpenedQuestion(gameId);
 
       if (!openedquestion) {
         throw new BusinessError(
@@ -134,7 +144,8 @@ export function createQuestionUseCases({
         progress.totalParticipants > 0 &&
         progress.answeredCount >= progress.totalParticipants;
       const timeExpired =
-        secondsSince(openedquestion.openedAt) >= Number(openedquestion.duration);
+        secondsSince(openedquestion.openedAt) >=
+        Number(openedquestion.duration);
 
       if (!allAnswered && !timeExpired) {
         throw new BusinessError(
@@ -165,7 +176,8 @@ export function createQuestionUseCases({
         throw new BusinessError("Partie introuvable.", 404);
       }
 
-      const current = await questionRepository.findCurrentQuestionForStatistics(gameId);
+      const current =
+        await questionRepository.findCurrentQuestionForStatistics(gameId);
 
       if (!current) {
         throw new BusinessError(
@@ -194,7 +206,8 @@ export function createQuestionUseCases({
     },
 
     async markStatsViewed(contestQuestionId) {
-      const result = await statisticRepository.markStatsViewed(contestQuestionId);
+      const result =
+        await statisticRepository.markStatsViewed(contestQuestionId);
 
       if (!result) {
         throw new BusinessError("Question introuvable.", 404);

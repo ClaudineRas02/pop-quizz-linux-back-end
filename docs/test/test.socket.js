@@ -6,7 +6,7 @@ const socket = io("http://localhost:3000");
 
 socket.on("connect", () => {
   console.log("Connecté :", socket.id);
-  socket.emit("join-game", 20);
+  socket.emit("join-game", 24);
 });
 
 socket.on("disconnect", () => {

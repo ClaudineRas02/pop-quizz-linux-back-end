@@ -39,11 +39,10 @@ export async function autoCreateRoundsForContest(
       missing,
       selected.map((entry) => entry.questionId),
     );
-
     for (const question of fallbackIds) {
       selected.push({
         questionId: question.question_id,
-        roundNumber: question.category === "culture_generale" ? 1 : 2,
+        roundNumber: getRoundNumberForDifficulty(question.difficulty),
       });
     }
   }
@@ -83,7 +82,7 @@ async function pickQuestionIdsByFilter(client, whereSql, limit, excludedIds) {
     SELECT question_id
     FROM public.question
     WHERE ${whereSql}
-      AND ($2::integer[] IS NULL OR question_id <> ALL($2::integer[]))
+      AND ($2::text[] IS NULL OR question_id::text <> ALL($2::text[]))
     ORDER BY RANDOM()
     LIMIT $1
     `,
@@ -100,18 +99,14 @@ async function pickQuestionIdsByAllowedPools(client, limit, excludedIds) {
 
   const { rows } = await client.query(
     `
-    SELECT question_id, category
+    SELECT question_id, difficulty
     FROM public.question
     WHERE (
-      (category = 'culture_generale'::public.question_category AND type = 'multiple_choice'::public.question_type)
-      OR (category = 'linux'::public.question_category AND type IN (
-        'multiple_choice'::public.question_type,
-        'command'::public.question_type,
-        'combination'::public.question_type,
-        'fill_blank'::public.question_type
-      ))
+      (difficulty = 'easy' AND category = 'culture_generale'::public.question_category AND type = 'multiple_choice'::public.question_type)
+      OR (difficulty = 'medium' AND type = 'command'::public.question_type)
+      OR (difficulty = 'hard')
     )
-      AND ($2::integer[] IS NULL OR question_id <> ALL($2::integer[]))
+      AND ($2::text[] IS NULL OR question_id::text <> ALL($2::text[]))
     ORDER BY RANDOM()
     LIMIT $1
     `,
@@ -119,6 +114,12 @@ async function pickQuestionIdsByAllowedPools(client, limit, excludedIds) {
   );
 
   return rows;
+}
+
+function getRoundNumberForDifficulty(difficulty) {
+  if (difficulty === "easy") return 1;
+  if (difficulty === "hard") return 3;
+  return 2;
 }
 
 async function syncContestTotalQuestions(client, gameId) {

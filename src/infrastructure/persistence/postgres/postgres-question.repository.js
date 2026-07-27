@@ -1,4 +1,9 @@
-import { toContestQuestion, toQuestion, toQuestionWithChoices, toChoice } from "./mappers/question.mapper.js";
+import {
+  toContestQuestion,
+  toQuestion,
+  toQuestionWithChoices,
+  toChoice,
+} from "./mappers/question.mapper.js";
 import { query, beginTransaction } from "./db.js";
 
 export function createPostgresQuestionRepository() {
@@ -194,7 +199,16 @@ export function createPostgresQuestionRepository() {
       return toQuestionWithChoices(questionRows[0], choiceRows);
     },
 
-    async create({ statement, category, type, duration, points, explanation, difficulty, choices }) {
+    async create({
+      statement,
+      category,
+      type,
+      duration,
+      points,
+      explanation,
+      difficulty,
+      choices,
+    }) {
       const client = await beginTransaction();
       try {
         const { rows } = await client.query(
@@ -203,7 +217,15 @@ export function createPostgresQuestionRepository() {
           VALUES ($1, $2, $3, $4, $5, $6, $7)
           RETURNING *
           `,
-          [statement, category, type, duration, points, explanation, difficulty],
+          [
+            statement,
+            category,
+            type,
+            duration,
+            points,
+            explanation,
+            difficulty,
+          ],
         );
 
         const question = rows[0];
@@ -215,7 +237,13 @@ export function createPostgresQuestionRepository() {
               INSERT INTO public.question_choice (question_id, label, content, is_correct, order_index)
               VALUES ($1, $2, $3, $4, $5)
               `,
-              [question.question_id, choice.label, choice.content, choice.isCorrect, choice.orderIndex],
+              [
+                question.question_id,
+                choice.label,
+                choice.content,
+                choice.isCorrect,
+                choice.orderIndex,
+              ],
             );
           }
         }
@@ -236,7 +264,19 @@ export function createPostgresQuestionRepository() {
       }
     },
 
-    async update(questionId, { statement, category, type, duration, points, explanation, difficulty, choices }) {
+    async update(
+      questionId,
+      {
+        statement,
+        category,
+        type,
+        duration,
+        points,
+        explanation,
+        difficulty,
+        choices,
+      },
+    ) {
       const client = await beginTransaction();
       try {
         const { rows } = await client.query(
@@ -282,7 +322,13 @@ export function createPostgresQuestionRepository() {
               INSERT INTO public.question_choice (question_id, label, content, is_correct, order_index)
               VALUES ($1, $2, $3, $4, $5)
               `,
-              [questionId, choice.label, choice.content, choice.isCorrect, choice.orderIndex],
+              [
+                questionId,
+                choice.label,
+                choice.content,
+                choice.isCorrect,
+                choice.orderIndex,
+              ],
             );
           }
         }
@@ -315,23 +361,44 @@ export function createPostgresQuestionRepository() {
       const { rows } = await query(
         `
     SELECT
-      cq.*,
-      q.statement,
-      q.category,
-      q.type,
-      q.duration,
-      q.points,
-      q.explanation,
-      qc.content AS correct_answer
-    FROM public.contest_question cq
-    JOIN public.question q ON q.question_id = cq.question_id
-    LEFT JOIN public.question_choice qc
-      ON qc.question_id = q.question_id
-     AND qc.is_correct = true
-    WHERE cq.contest_id = $1
-      AND cq.status = 'opened'::public.contest_question_status
-    ORDER BY qc.order_index ASC
-    LIMIT 1
+    cq.*,
+    q.statement,
+    q.category,
+    q.type,
+    q.duration,
+    q.points,
+    q.explanation,
+
+    (
+        SELECT qc.content
+        FROM question_choice qc
+        WHERE qc.question_id=q.question_id
+        AND qc.is_correct=true
+        LIMIT 1
+    ) AS correct_answer,
+
+    (
+        SELECT json_agg(
+            json_build_object(
+                'choiceId',choice_id,
+                'label',label,
+                'content',content,
+                'orderIndex',order_index
+            )
+            ORDER BY order_index
+        )
+        FROM question_choice
+        WHERE question_id=q.question_id
+    ) AS choices
+
+    FROM contest_question cq
+    JOIN question q
+    ON q.question_id=cq.question_id
+
+    WHERE cq.contest_id=$1
+    AND cq.status='opened'
+
+    LIMIT 1;
     `,
         [gameId],
       );
@@ -346,6 +413,7 @@ export function createPostgresQuestionRepository() {
             points: rows[0].points,
             explanation: rows[0].explanation,
             correctAnswer: rows[0].correct_answer,
+            choices: rows[0].choices ?? [],
           }
         : null;
     },

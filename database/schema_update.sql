@@ -66,7 +66,7 @@ ALTER TYPE public.contest_status OWNER TO pop_quizz_user;
 
 CREATE TYPE public.question_category AS ENUM (
     'culture_generale',
-    'linux',
+    'linux_command',
     'shell'
 );
 
