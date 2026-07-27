@@ -27,6 +27,10 @@
     {
       "name": "Auth",
       "description": "Authentification publique"
+    },
+    {
+      "name": "Questions",
+      "description": "Gestion des questions (CRUD admin)"
     }
   ],
   "paths": {
@@ -667,6 +671,124 @@
           }
         }
       }
+    },
+    "/api/admin/questions/list": {
+      "get": {
+        "tags": ["Questions"],
+        "summary": "Lister toutes les questions",
+        "responses": {
+          "200": {
+            "description": "Liste des questions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/questions/{questionId}": {
+      "get": {
+        "tags": ["Questions"],
+        "summary": "Recuperer une question par identifiant",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/QuestionId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Question trouvee",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/questions/create": {
+      "post": {
+        "tags": ["Questions"],
+        "summary": "Creer une question",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Question creee",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/questions/update/{questionId}": {
+      "patch": {
+        "tags": ["Questions"],
+        "summary": "Mettre a jour une question",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/QuestionId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Question mise a jour",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuestionDetailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/questions/delete/{questionId}": {
+      "delete": {
+        "tags": ["Questions"],
+        "summary": "Supprimer une question",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/QuestionId"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Question supprimee"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1140,6 +1262,159 @@
               "event": {
                 "type": "object"
               }
+            }
+          }
+        }
+      },
+      "QuestionChoice": {
+        "type": "object",
+        "properties": {
+          "choiceId": { "type": "string" },
+          "questionId": { "type": "string" },
+          "label": { "type": "string" },
+          "content": { "type": "string" },
+          "isCorrect": { "type": "boolean" },
+          "orderIndex": { "type": "integer" }
+        }
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "questionId": { "type": "string" },
+          "statement": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": ["culture_generale", "linux", "shell"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["multiple_choice", "command", "fill_blank", "combination", "shell_code"]
+          },
+          "duration": { "type": "integer" },
+          "points": { "type": "integer" },
+          "explanation": { "type": ["string", "null"] },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard"]
+          },
+          "createdAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "QuestionWithChoices": {
+        "type": "object",
+        "properties": {
+          "questionId": { "type": "string" },
+          "statement": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": ["culture_generale", "linux", "shell"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["multiple_choice", "command", "fill_blank", "combination", "shell_code"]
+          },
+          "duration": { "type": "integer" },
+          "points": { "type": "integer" },
+          "explanation": { "type": ["string", "null"] },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard"]
+          },
+          "createdAt": { "type": ["string", "null"], "format": "date-time" },
+          "choices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionChoice"
+            }
+          }
+        }
+      },
+      "QuestionCreateRequest": {
+        "type": "object",
+        "required": ["statement", "category", "type", "duration", "points"],
+        "properties": {
+          "statement": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": ["culture_generale", "linux", "shell"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["multiple_choice", "command", "fill_blank", "combination", "shell_code"]
+          },
+          "duration": { "type": "integer", "minimum": 1 },
+          "points": { "type": "integer", "minimum": 1 },
+          "explanation": { "type": ["string", "null"] },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard"],
+            "default": "medium"
+          },
+          "choices": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": ["label", "content", "isCorrect"],
+              "properties": {
+                "label": { "type": "string" },
+                "content": { "type": "string" },
+                "isCorrect": { "type": "boolean" },
+                "orderIndex": { "type": "integer" }
+              }
+            }
+          }
+        }
+      },
+      "QuestionUpdateRequest": {
+        "type": "object",
+        "properties": {
+          "statement": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": ["culture_generale", "linux", "shell"]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["multiple_choice", "command", "fill_blank", "combination", "shell_code"]
+          },
+          "duration": { "type": "integer", "minimum": 1 },
+          "points": { "type": "integer", "minimum": 1 },
+          "explanation": { "type": ["string", "null"] },
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard"]
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["label", "content", "isCorrect"],
+              "properties": {
+                "label": { "type": "string" },
+                "content": { "type": "string" },
+                "isCorrect": { "type": "boolean" },
+                "orderIndex": { "type": "integer" }
+              }
+            }
+          }
+        }
+      },
+      "QuestionDetailResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/QuestionWithChoices"
+          }
+        }
+      },
+      "QuestionListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
             }
           }
         }

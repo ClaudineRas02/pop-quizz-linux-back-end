@@ -23,6 +23,11 @@ export function createApplicationModules() {
       const { createPlayerModule } = await import("./player.module.js");
       return createPlayerModule();
     }),
+
+    question: createLazyModule(async () => {
+      const { createQuestionModule } = await import("./question.module.js");
+      return createQuestionModule();
+    }),
   };
 }
 

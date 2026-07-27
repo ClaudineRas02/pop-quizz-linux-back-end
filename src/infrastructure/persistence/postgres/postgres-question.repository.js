@@ -1,5 +1,5 @@
-import { toContestQuestion } from "./mappers/question.mapper.js";
-import { query } from "./db.js";
+import { toContestQuestion, toQuestion, toQuestionWithChoices, toChoice } from "./mappers/question.mapper.js";
+import { query, beginTransaction } from "./db.js";
 
 export function createPostgresQuestionRepository() {
   return {
@@ -165,6 +165,150 @@ export function createPostgresQuestionRepository() {
     `,
         [gameId],
       );
+    },
+
+    // ==================== CRUD QUESTIONS ====================
+
+    async findAll() {
+      const { rows } = await query(`
+        SELECT *
+        FROM public.question
+        ORDER BY created_at DESC
+      `);
+      return rows.map(toQuestion);
+    },
+
+    async findById(questionId) {
+      const { rows: questionRows } = await query(
+        `SELECT * FROM public.question WHERE question_id = $1`,
+        [questionId],
+      );
+
+      if (!questionRows[0]) return null;
+
+      const { rows: choiceRows } = await query(
+        `SELECT * FROM public.question_choice WHERE question_id = $1 ORDER BY order_index ASC`,
+        [questionId],
+      );
+
+      return toQuestionWithChoices(questionRows[0], choiceRows);
+    },
+
+    async create({ statement, category, type, duration, points, explanation, difficulty, choices }) {
+      const client = await beginTransaction();
+      try {
+        const { rows } = await client.query(
+          `
+          INSERT INTO public.question (statement, category, type, duration, points, explanation, difficulty)
+          VALUES ($1, $2, $3, $4, $5, $6, $7)
+          RETURNING *
+          `,
+          [statement, category, type, duration, points, explanation, difficulty],
+        );
+
+        const question = rows[0];
+
+        if (choices && choices.length > 0) {
+          for (const choice of choices) {
+            await client.query(
+              `
+              INSERT INTO public.question_choice (question_id, label, content, is_correct, order_index)
+              VALUES ($1, $2, $3, $4, $5)
+              `,
+              [question.question_id, choice.label, choice.content, choice.isCorrect, choice.orderIndex],
+            );
+          }
+        }
+
+        await client.query("COMMIT");
+
+        const { rows: allChoices } = await query(
+          `SELECT * FROM public.question_choice WHERE question_id = $1 ORDER BY order_index ASC`,
+          [question.question_id],
+        );
+
+        return toQuestionWithChoices(question, allChoices);
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
+
+    async update(questionId, { statement, category, type, duration, points, explanation, difficulty, choices }) {
+      const client = await beginTransaction();
+      try {
+        const { rows } = await client.query(
+          `
+          UPDATE public.question
+          SET
+            statement = COALESCE($2::text, statement),
+            category = COALESCE($3::public.question_category, category),
+            type = COALESCE($4::public.question_type, type),
+            duration = COALESCE($5::integer, duration),
+            points = COALESCE($6::integer, points),
+            explanation = COALESCE($7::text, explanation),
+            difficulty = COALESCE($8::varchar, difficulty)
+          WHERE question_id = $1
+          RETURNING *
+          `,
+          [
+            questionId,
+            statement ?? null,
+            category ?? null,
+            type ?? null,
+            duration ?? null,
+            points ?? null,
+            explanation ?? null,
+            difficulty ?? null,
+          ],
+        );
+
+        if (!rows[0]) {
+          await client.query("ROLLBACK");
+          return null;
+        }
+
+        if (choices !== undefined) {
+          await client.query(
+            `DELETE FROM public.question_choice WHERE question_id = $1`,
+            [questionId],
+          );
+
+          for (const choice of choices) {
+            await client.query(
+              `
+              INSERT INTO public.question_choice (question_id, label, content, is_correct, order_index)
+              VALUES ($1, $2, $3, $4, $5)
+              `,
+              [questionId, choice.label, choice.content, choice.isCorrect, choice.orderIndex],
+            );
+          }
+        }
+
+        await client.query("COMMIT");
+
+        const { rows: allChoices } = await query(
+          `SELECT * FROM public.question_choice WHERE question_id = $1 ORDER BY order_index ASC`,
+          [questionId],
+        );
+
+        return toQuestionWithChoices(rows[0], allChoices);
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    },
+
+    async delete(questionId) {
+      const { rowCount } = await query(
+        `DELETE FROM public.question WHERE question_id = $1`,
+        [questionId],
+      );
+      return rowCount > 0;
     },
 
     async findOpenedQuestion(gameId) {

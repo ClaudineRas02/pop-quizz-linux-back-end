@@ -21,5 +21,10 @@ export function createAdminRoutes(modules) {
     lazyRouteMount(() => modules.player.getAdminRoutes()),
   );
 
+  router.use(
+    "/questions",
+    lazyRouteMount(() => modules.question.getAdminRoutes()),
+  );
+
   return router;
 }

@@ -1,3 +1,42 @@
+export function toQuestion(row) {
+  return {
+    questionId: row.question_id,
+    statement: row.statement,
+    category: row.category,
+    type: row.type,
+    duration: row.duration,
+    points: row.points,
+    explanation: row.explanation,
+    difficulty: row.difficulty,
+    createdAt: row.created_at,
+  };
+}
+
+export function toQuestionWithChoices(row, choices = []) {
+  return {
+    ...toQuestion(row),
+    choices: choices.map((c) => ({
+      choiceId: c.choice_id,
+      questionId: c.question_id,
+      label: c.label,
+      content: c.content,
+      isCorrect: c.is_correct,
+      orderIndex: c.order_index,
+    })),
+  };
+}
+
+export function toChoice(row) {
+  return {
+    choiceId: row.choice_id,
+    questionId: row.question_id,
+    label: row.label,
+    content: row.content,
+    isCorrect: row.is_correct,
+    orderIndex: row.order_index,
+  };
+}
+
 export function toOpenedQuestion(row, progress) {
   return {
     contestQuestionId: row.contest_question_id,

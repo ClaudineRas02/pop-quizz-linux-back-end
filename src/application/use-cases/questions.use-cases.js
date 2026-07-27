@@ -1,4 +1,5 @@
 import { BusinessError } from "../../domain/errors/business-error.js";
+import { verifyQuestionData, verifyQuestionUpdate } from "../../domain/entities/question.js";
 import { scheduleQuestionTimeout } from "../../shared/utils/question-timer.service.js";
 
 export function createQuestionUseCases({
@@ -7,6 +8,54 @@ export function createQuestionUseCases({
   statisticRepository,
 }) {
   return {
+    // ==================== CRUD QUESTIONS ====================
+
+    async listQuestions() {
+      return await questionRepository.findAll();
+    },
+
+    async getQuestionById(questionId) {
+      const question = await questionRepository.findById(questionId);
+      if (!question) {
+        throw new BusinessError("Question introuvable.", 404);
+      }
+      return question;
+    },
+
+    async createQuestion(questionData) {
+      const verifiedData = verifyQuestionData(questionData);
+      return await questionRepository.create(verifiedData);
+    },
+
+    async updateQuestion(questionId, updateData) {
+      const existing = await questionRepository.findById(questionId);
+      if (!existing) {
+        throw new BusinessError("Question introuvable.", 404);
+      }
+
+      const verifiedData = verifyQuestionUpdate(updateData);
+      const updated = await questionRepository.update(questionId, verifiedData);
+      if (!updated) {
+        throw new BusinessError("Impossible de mettre à jour la question.", 500);
+      }
+      return updated;
+    },
+
+    async deleteQuestion(questionId) {
+      const existing = await questionRepository.findById(questionId);
+      if (!existing) {
+        throw new BusinessError("Question introuvable.", 404);
+      }
+
+      const deleted = await questionRepository.delete(questionId);
+      if (!deleted) {
+        throw new BusinessError("Impossible de supprimer la question.", 500);
+      }
+      return deleted;
+    },
+
+    // ==================== GAME QUESTION OPERATIONS ====================
+
     //ouvre, envoie la question, attend la fin du timer et ferme la question automatiquement
     async openNextQuestion(gameId) {
       const game = await gameRepository.findById(gameId);
