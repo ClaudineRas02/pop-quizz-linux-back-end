@@ -21,6 +21,11 @@ export function createPublicGameRoutes(gameController) {
     adaptRoute(gameController.getQuestionStats),
   );
   router.get("/:gameId/leaderboard", adaptRoute(gameController.getLeaderboard));
+  //leaderboard for a the connected player
+  router.get(
+    "/:gameId/leaderboard/me",
+    adaptRoute(gameController.getLeaderboardForPlayer),
+  );
 
   return router;
 }

@@ -17,5 +17,17 @@ export function createPostgresLeaderboardRepository() {
 
       return rows.map(toLeaderboardRow);
     },
+    async getLeaderboardForPlayer(gameId, playerId) {
+      const { rows } = await query(
+        `
+        SELECT *
+        FROM public.v_contest_player_score
+        WHERE contest_id = $1 AND player_id = $2
+        `,
+        [gameId, playerId],
+      );
+
+      return rows.map(toLeaderboardRow);
+    },
   };
 }

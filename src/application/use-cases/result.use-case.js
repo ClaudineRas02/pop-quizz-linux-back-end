@@ -1,10 +1,20 @@
 import { BusinessError } from "../../domain/errors/business-error.js";
 import { verifyJoinPayload } from "../../domain/entities/game.js";
 
-export function createLeaderboardUseCases({ gameRepository, leaderboardRepository }) {
+export function createLeaderboardUseCases({
+  gameRepository,
+  leaderboardRepository,
+}) {
   return {
     async getLeaderboard(gameId) {
       return await leaderboardRepository.getLeaderboard(gameId);
+    },
+
+    async getLeaderboardForPlayer(gameId, playerId) {
+      return await leaderboardRepository.getLeaderboardForPlayer(
+        gameId,
+        playerId,
+      );
     },
 
     //top 3 players + reveal schedule

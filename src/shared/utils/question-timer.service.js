@@ -3,13 +3,16 @@ const timers = new Map();
 export function scheduleQuestionTimeout(gameId, duration, callback) {
   clearQuestionTimeout(gameId);
 
-  const timer = setTimeout(() => {
-    timers.delete(gameId);
+  const timer = setTimeout(
+    () => {
+      timers.delete(gameId);
 
-    Promise.resolve(callback()).catch((error) => {
-      console.error("Question timeout callback failed:", error);
-    });
-  }, duration * 1000);
+      Promise.resolve(callback()).catch((error) => {
+        console.error("Question timeout callback failed:", error);
+      });
+    },
+    duration * 1000 + 1000,
+  ); // Add 1 second buffer to ensure the question is closed before the timeout
 
   timers.set(gameId, timer);
 }

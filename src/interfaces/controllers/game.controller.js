@@ -49,8 +49,8 @@ export function createGameController({
       return ok(result);
     },
 
-    async joinGame({ params, body }) {
-      const result = await gameUseCases.joinGame(params.gameId, body);
+    async joinGame({ params, body, user }) {
+      const result = await gameUseCases.joinGame(params.gameId, { playerId: user.playerId });
 
       return created(result);
     },
@@ -112,6 +112,14 @@ export function createGameController({
     async getLeaderboard({ params }) {
       const leaderboard = await leaderboardUseCases.getLeaderboard(
         params.gameId,
+      );
+
+      return ok(leaderboard);
+    },
+    async getLeaderboardForPlayer({ params, user }) {
+      const leaderboard = await leaderboardUseCases.getLeaderboardForPlayer(
+        params.gameId,
+        user.playerId,
       );
 
       return ok(leaderboard);
