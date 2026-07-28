@@ -7,8 +7,11 @@ export function createGameController({
   leaderboardUseCases,
 }) {
   return {
-    async createGame({ body }) {
-      const game = await gameUseCases.createGame(body);
+    async createGame({ body, user }) {
+      const game = await gameUseCases.createGame({
+        ...body,
+        createdBy: user.id,
+      });
 
       return created(game);
     },
@@ -64,6 +67,17 @@ export function createGameController({
       return ok(result);
     },
 
+    async submitAnswer({ params, body, user }) {
+      const result = await answerUseCases.submitAnswer({
+        gameId: params.gameId,
+        contestQuestionId: params.questionId,
+        playerId: user.playerId,
+        answer: body.answer ?? body.answerValue,
+        answerType: body.answerType,
+      });
+
+      return created(result);
+    },
     async closeCurrentQuestion({ params }) {
       const result = await questionUseCases.closeCurrentQuestion(params.gameId);
 
@@ -71,25 +85,19 @@ export function createGameController({
     },
 
     async getCurrentQuestionStats({ params }) {
-      const stats = await questionUseCases.getCurrentQuestionStats(params.gameId);
+      const stats = await questionUseCases.getCurrentQuestionStats(
+        params.gameId,
+      );
 
       return ok(stats);
     },
 
     async markStatsViewed({ params }) {
-      const question = await questionUseCases.markStatsViewed(params.questionId);
+      const question = await questionUseCases.markStatsViewed(
+        params.questionId,
+      );
 
       return ok(question);
-    },
-
-    async submitAnswer({ params, body }) {
-      const result = await answerUseCases.submitAnswer({
-        gameId: params.gameId,
-        contestQuestionId: params.questionId,
-        ...body,
-      });
-
-      return created(result);
     },
 
     async getQuestionStats({ params }) {
@@ -102,7 +110,9 @@ export function createGameController({
     },
 
     async getLeaderboard({ params }) {
-      const leaderboard = await leaderboardUseCases.getLeaderboard(params.gameId);
+      const leaderboard = await leaderboardUseCases.getLeaderboard(
+        params.gameId,
+      );
 
       return ok(leaderboard);
     },

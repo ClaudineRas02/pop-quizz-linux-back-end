@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { adaptRoute } from "../../shared/express-route-adapter.js";
+import { requireAuth } from "../../infrastructure/http/middlewares/auth.middleware.js";
 
 export function createPublicGameRoutes(gameController) {
   const router = Router();
+
+  router.use(requireAuth);
 
   router.post("/:gameId/join", adaptRoute(gameController.joinGame));
   router.post(

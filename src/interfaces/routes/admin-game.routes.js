@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { adaptRoute } from "../../shared/express-route-adapter.js";
 import { requireAuth } from "../../infrastructure/http/middlewares/auth.middleware.js";
-
+import { requireAdmin } from "../../infrastructure/http/middlewares/admin-auth.middleware.js";
 export function createAdminGameRoutes(gameController) {
   const router = Router();
 
-  // router.use(requireAuth);
-  // router.use(requireRole("admin"));
+  router.use(requireAuth);
+  router.use(requireAdmin);
 
   // listes toutes les parties : en attente, en cours, terminées
   router.get("/list", adaptRoute(gameController.listGames));
