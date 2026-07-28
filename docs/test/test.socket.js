@@ -38,6 +38,11 @@ socket.on("question:opened", (data) => {
   console.log(data);
 });
 
+socket.on("question:closed", (data) => {
+  console.log("Question fermée");
+  console.log(data);
+});
+
 socket.on("game:ended", (data) => {
   console.log("Partie terminée");
   console.log(data);

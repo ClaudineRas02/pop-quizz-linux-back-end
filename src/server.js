@@ -3,6 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 
 import { createApp } from "./infrastructure/http/app.js";
+import { setRealtimeServer } from "./shared/realtime-event-bus.js";
 
 // Load environment variables
 dotenv.config();
@@ -22,6 +23,7 @@ const io = new Server(server, {
 });
 
 app.locals.io = io;
+setRealtimeServer(io);
 
 //connect to socket.io
 io.on("connection", (socket) => {

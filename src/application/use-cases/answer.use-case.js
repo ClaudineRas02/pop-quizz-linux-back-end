@@ -5,6 +5,7 @@ import {
   normalizeAnswer,
   verifyAnswerPayload,
 } from "../../domain/entities/game.js";
+import { clearQuestionTimeout } from "../../shared/utils/question-timer.service.js";
 
 export function createAnswerUseCases({ answerRepository }) {
   return {
@@ -49,6 +50,21 @@ export function createAnswerUseCases({ answerRepository }) {
             answer: existing,
           };
         }
+        const responseTime = secondsSince(question.openedAt);
+        const timeExpired = responseTime >= Number(question.duration);
+
+        if (timeExpired) {
+          await answerRepository.closeQuestion(client, contestQuestionId);
+          clearQuestionTimeout(gameId);
+
+          return {
+            accepted: false,
+            closed: true,
+            reason: "QUESTION_TIMEOUT",
+            correctAnswer: question.correctAnswer,
+          };
+        }
+
         // Check if the answer is correct and calculate points
         const isCorrect = checkAnswerCorrectness(question, payload.answer);
         const firstBlood =
@@ -57,7 +73,6 @@ export function createAnswerUseCases({ answerRepository }) {
         const earnedPoints = isCorrect
           ? calculateEarnedPoints(question.points, firstBlood)
           : 0;
-        const responseTime = secondsSince(question.openedAt);
 
         // Save the answer in the database
         const savedAnswer = await answerRepository.insertAnswer(client, {
@@ -83,6 +98,7 @@ export function createAnswerUseCases({ answerRepository }) {
 
         if (allAnswered) {
           await answerRepository.closeQuestion(client, contestQuestionId);
+          clearQuestionTimeout(gameId);
         }
         // Return the result of the answer submission if all answered
         return {
@@ -96,8 +112,11 @@ export function createAnswerUseCases({ answerRepository }) {
         };
       });
 
-      // On construit l'event seulement si la question vient de se fermer
-      if (result.accepted && result.closed) {
+      // On construit l'event seulement si cette action vient de fermer la question.
+      if (
+        result.closed &&
+        (result.accepted || result.reason === "QUESTION_TIMEOUT")
+      ) {
         return {
           ...result,
           event: {
@@ -126,5 +145,6 @@ function calculateEarnedPoints(points, firstBlood) {
 }
 
 function secondsSince(date) {
-  return Number(((Date.now() - new Date(date).getTime()) / 1000).toFixed(2));
+  const elapsed = (Date.now() - new Date(date).getTime()) / 1000;
+  return Number(Math.max(0, elapsed).toFixed(2));
 }

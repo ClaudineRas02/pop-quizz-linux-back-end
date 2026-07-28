@@ -4,7 +4,11 @@ export function scheduleQuestionTimeout(gameId, duration, callback) {
   clearQuestionTimeout(gameId);
 
   const timer = setTimeout(() => {
-    callback();
+    timers.delete(gameId);
+
+    Promise.resolve(callback()).catch((error) => {
+      console.error("Question timeout callback failed:", error);
+    });
   }, duration * 1000);
 
   timers.set(gameId, timer);

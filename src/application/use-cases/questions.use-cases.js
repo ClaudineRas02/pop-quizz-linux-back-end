@@ -3,7 +3,11 @@ import {
   verifyQuestionData,
   verifyQuestionUpdate,
 } from "../../domain/entities/question.js";
-import { scheduleQuestionTimeout } from "../../shared/utils/question-timer.service.js";
+import {
+  clearQuestionTimeout,
+  scheduleQuestionTimeout,
+} from "../../shared/utils/question-timer.service.js";
+import { emitRealtimeEvent } from "../../shared/realtime-event-bus.js";
 
 export function createQuestionUseCases({
   gameRepository,
@@ -98,7 +102,8 @@ export function createQuestionUseCases({
         (await questionRepository.findOpenedQuestion(gameId)) ?? question;
 
       scheduleQuestionTimeout(gameId, openedQuestion.duration, async () => {
-        await this.closeCurrentQuestion(gameId);
+        const result = await this.closeCurrentQuestion(gameId);
+        emitRealtimeEvent(result?.event);
       });
 
       return {
@@ -155,6 +160,7 @@ export function createQuestionUseCases({
       }
 
       await questionRepository.closeQuestion(openedquestion.contestQuestionId);
+      clearQuestionTimeout(gameId);
 
       return {
         progress,
