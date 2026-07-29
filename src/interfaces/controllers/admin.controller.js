@@ -1,15 +1,11 @@
+import { ok, created, noContent } from "../utils/success.js";
+
 export function createAdminController(adminUseCases) {
   return {
     // POST /admin/register
     async register({ body }) {
       const result = await adminUseCases.register(body);
       return created(result);
-    },
-
-    // POST /admin/login
-    async login({ body }) {
-      const result = await adminUseCases.login(body);
-      return ok(result);
     },
 
     // GET /admin
@@ -43,19 +39,5 @@ export function createAdminController(adminUseCases) {
       const result = await adminUseCases.deleteAdmin(params.adminId);
       return ok(result);
     },
-  };
-}
-
-function ok(data) {
-  return {
-    statusCode: 200,
-    body: { data },
-  };
-}
-
-function created(data) {
-  return {
-    statusCode: 201,
-    body: { data },
   };
 }

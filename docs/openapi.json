@@ -62,34 +62,6 @@
         }
       }
     },
-    "/api/admin/login": {
-      "post": {
-        "tags": ["Admins"],
-        "summary": "Connexion administrateur",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AdminAuthRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Administrateur connecte",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AdminLoginResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/admin/me": {
       "get": {
         "tags": ["Admins"],
@@ -298,24 +270,24 @@
     "/api/auth/login": {
       "post": {
         "tags": ["Auth"],
-        "summary": "Connexion joueur",
+        "summary": "Connexion joueur ou administrateur",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PlayerLoginRequest"
+                "$ref": "#/components/schemas/AuthLoginRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Joueur connecte",
+            "description": "Utilisateur connecte",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PlayerLoginResponse"
+                  "$ref": "#/components/schemas/AuthLoginResponse"
                 }
               }
             }
@@ -899,16 +871,23 @@
           }
         }
       },
-      "AdminLoginResponse": {
+      "AuthLoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "AuthLoginResponse": {
         "type": "object",
         "properties": {
           "data": {
             "type": "object",
             "properties": {
-              "admin": {
-                "$ref": "#/components/schemas/Admin"
-              },
-              "token": { "type": "string" }
+              "user": { "type": "object" },
+              "token": { "type": "string" },
+              "role": { "type": "string", "enum": ["admin", "player"] }
             }
           }
         }
@@ -931,14 +910,6 @@
           "email": { "type": "string" },
           "password": { "type": "string" },
           "avatarUrl": { "type": ["string", "null"] }
-        }
-      },
-      "PlayerLoginRequest": {
-        "type": "object",
-        "required": ["email", "password"],
-        "properties": {
-          "email": { "type": "string" },
-          "password": { "type": "string" }
         }
       },
       "PlayerAvatarUpdateRequest": {
@@ -976,20 +947,6 @@
               "player": {
                 "$ref": "#/components/schemas/Player"
               }
-            }
-          }
-        }
-      },
-      "PlayerLoginResponse": {
-        "type": "object",
-        "properties": {
-          "data": {
-            "type": "object",
-            "properties": {
-              "player": {
-                "$ref": "#/components/schemas/Player"
-              },
-              "token": { "type": "string" }
             }
           }
         }

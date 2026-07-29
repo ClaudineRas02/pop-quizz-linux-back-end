@@ -7,18 +7,12 @@ export function createAdminRoutes(adminController) {
   const router = Router();
 
   /**
-   * PUBLIC ADMIN AUTH ROUTES
+   * PUBLIC ADMIN REGISTER
    * (pas besoin de token)
    */
-
   router.post(
     "/register",
     adaptRoute(adminController.register)
-  );
-
-  router.post(
-    "/login",
-    adaptRoute(adminController.login)
   );
 
   /**
