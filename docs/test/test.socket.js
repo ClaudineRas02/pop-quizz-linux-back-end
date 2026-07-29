@@ -27,6 +27,10 @@ socket.on("game:started", (game) => {
   console.log(game);
 });
 
+socket.on("show-leaderboard", (data) => {
+  console.log(data.message);
+});
+
 //game:participant-joined
 socket.on("game:participant-joined", (data) => {
   console.log("Nouveau participant");

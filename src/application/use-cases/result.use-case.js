@@ -6,6 +6,19 @@ export function createLeaderboardUseCases({
   leaderboardRepository,
 }) {
   return {
+    async emitLeaderboardViewEvent(gameId) {
+      //return event to show leaderboard to the player
+      return {
+        event: {
+          name: "show-leaderboard",
+          room: `game:${gameId}`,
+          payload: {
+            message: "Le classement est maintenant visible pour les joueurs.",
+          },
+        },
+      };
+    },
+
     async getLeaderboard(gameId) {
       return await leaderboardRepository.getLeaderboard(gameId);
     },

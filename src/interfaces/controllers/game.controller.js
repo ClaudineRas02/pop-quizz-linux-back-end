@@ -44,10 +44,7 @@ export function createGameController({
     },
 
     async addQuestionToRound({ params, body }) {
-      const result = await gameUseCases.addQuestionToRound(
-        params.gameId,
-        body,
-      );
+      const result = await gameUseCases.addQuestionToRound(params.gameId, body);
 
       return created(result);
     },
@@ -65,7 +62,9 @@ export function createGameController({
     },
 
     async joinGame({ params, body, user }) {
-      const result = await gameUseCases.joinGame(params.gameId, { playerId: user.playerId });
+      const result = await gameUseCases.joinGame(params.gameId, {
+        playerId: user.playerId,
+      });
 
       return created(result);
     },
@@ -138,6 +137,12 @@ export function createGameController({
       );
 
       return ok(leaderboard);
+    },
+    async emitLeaderboardViewEvent({ params }) {
+      const result = await leaderboardUseCases.emitLeaderboardViewEvent(
+        params.gameId,
+      );
+      return ok(result);
     },
 
     async getResults({ params, query, body }) {

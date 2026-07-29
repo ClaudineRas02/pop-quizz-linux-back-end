@@ -54,6 +54,10 @@ export function createAdminGameRoutes(gameController) {
   router.post("/:gameId/end", adaptRoute(gameController.endGame));
   // recup les résultats d'une partie + 2fa
   router.get("/:gameId/results", adaptRoute(gameController.getResults));
-
+  // emet un event pour voir que player voit leaderboard
+  router.post(
+    "/:gameId/show-leaderboard",
+    adaptRoute(gameController.emitLeaderboardViewEvent),
+  );
   return router;
 }
