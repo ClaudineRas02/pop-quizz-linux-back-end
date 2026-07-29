@@ -43,6 +43,21 @@ export function createGameController({
       return noContent();
     },
 
+    async addQuestionToRound({ params, body }) {
+      const result = await gameUseCases.addQuestionToRound(
+        params.gameId,
+        body,
+      );
+
+      return created(result);
+    },
+
+    async getGameRounds({ params }) {
+      const rounds = await gameUseCases.getGameRounds(params.gameId);
+
+      return ok(rounds);
+    },
+
     async startGame({ params }) {
       const result = await gameUseCases.startGame(params.id ?? params.gameId);
 

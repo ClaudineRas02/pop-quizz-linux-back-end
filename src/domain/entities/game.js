@@ -83,6 +83,23 @@ export function verifyRoundPayload(payload = {}) {
   };
 }
 
+export function verifyAddQuestionToRound(payload = {}) {
+  const roundNumber = Number(payload.roundNumber);
+
+  if (!Number.isInteger(roundNumber) || roundNumber <= 0) {
+    throw new BusinessError("Numero de round invalide.", 400);
+  }
+
+  if (!payload.questionId || typeof payload.questionId !== "string" || payload.questionId.trim() === "") {
+    throw new BusinessError("Identifiant de question invalide.", 400);
+  }
+
+  return {
+    roundNumber,
+    questionId: payload.questionId.trim(),
+  };
+}
+
 export function verifyAnswerPayload(payload = {}) {
   const playerId = Number(payload.playerId);
   const answer = payload.answer ?? payload.answerValue;

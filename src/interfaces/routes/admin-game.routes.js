@@ -18,6 +18,16 @@ export function createAdminGameRoutes(gameController) {
   router.patch("/update/:gameId", adaptRoute(gameController.updateGame));
   // supprime une partie
   router.delete("/delete/:gameId", adaptRoute(gameController.deleteGame));
+  // ajouter une question a un round
+  router.post(
+    "/:gameId/rounds/add-question",
+    adaptRoute(gameController.addQuestionToRound),
+  );
+  // lister les questions/rounds d'une partie
+  router.get(
+    "/:gameId/rounds",
+    adaptRoute(gameController.getGameRounds),
+  );
   // démarre une partie: màj start_time et status
   router.post("/:gameId/start", adaptRoute(gameController.startGame));
   // fermer la question courante (temps ecoule ou tous ont repondu)

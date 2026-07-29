@@ -16,6 +16,7 @@ import { createPostgresQuestionRepository } from "../persistence/postgres/postgr
 import { createPostgresStatisticsRepository } from "../persistence/postgres/postgres-statistics.repository.js";
 import { createPostgresAnswerRepository } from "../persistence/postgres/postgres-answer.repository.js";
 import { createPostgresLeaderboardRepository } from "../persistence/postgres/postgres-leaderboard.repository.js";
+import { createPostgresRoundRepository } from "../persistence/postgres/postgres-round.repository.js";
 
 export function createGameModule() {
   const gameRepository = createPostgresGameRepository();
@@ -23,9 +24,12 @@ export function createGameModule() {
   const statisticRepository = createPostgresStatisticsRepository();
   const answerRepository = createPostgresAnswerRepository();
   const leaderboardRepository = createPostgresLeaderboardRepository();
+  const roundRepository = createPostgresRoundRepository();
 
   const gameUseCases = createGameUseCases({
     gameRepository,
+    questionRepository,
+    roundRepository,
   });
 
   const questionUseCases = createQuestionUseCases({

@@ -431,6 +431,62 @@
         }
       }
     },
+    "/api/admin/game/{gameId}/rounds/add-question": {
+      "post": {
+        "tags": ["Games"],
+        "summary": "Ajouter une question a un round",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddQuestionToRoundRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Question ajoutee au round",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContestQuestionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/game/{gameId}/rounds": {
+      "get": {
+        "tags": ["Games"],
+        "summary": "Lister les questions et rounds d'une partie",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/GameId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Rounds de la partie",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameRoundsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/game/{gameId}/start": {
       "post": {
         "tags": ["Games"],
@@ -1152,6 +1208,68 @@
                   "$ref": "#/components/schemas/LeaderboardRow"
                 }
               }
+            }
+          }
+        }
+      },
+      "GameStartResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "game": {
+                "$ref": "#/components/schemas/Game"
+              },
+              "event": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "AddQuestionToRoundRequest": {
+        "type": "object",
+        "required": ["questionId", "roundNumber"],
+        "properties": {
+          "questionId": { "type": "string" },
+          "roundNumber": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "ContestQuestion": {
+        "type": "object",
+        "properties": {
+          "contestQuestionId": { "type": "string" },
+          "gameId": { "type": "string" },
+          "questionId": { "type": "string" },
+          "roundNumber": { "type": "integer" },
+          "orderIndex": { "type": "integer" },
+          "status": { "type": "string" },
+          "openedAt": { "type": ["string", "null"], "format": "date-time" },
+          "closedAt": { "type": ["string", "null"], "format": "date-time" },
+          "statement": { "type": "string" },
+          "category": { "type": "string" },
+          "type": { "type": "string" },
+          "duration": { "type": "integer" },
+          "points": { "type": "integer" },
+          "difficulty": { "type": "string" }
+        }
+      },
+      "ContestQuestionResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ContestQuestion"
+          }
+        }
+      },
+      "GameRoundsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContestQuestion"
             }
           }
         }

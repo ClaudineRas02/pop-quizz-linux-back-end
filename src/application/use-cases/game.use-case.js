@@ -3,9 +3,10 @@ import {
   verifyGameData,
   verifyGameUpdate,
   verifyJoinPayload,
+  verifyAddQuestionToRound,
 } from "../../domain/entities/game.js";
 
-export function createGameUseCases({ gameRepository }) {
+export function createGameUseCases({ gameRepository, questionRepository, roundRepository }) {
   return {
     async listGames() {
       return await gameRepository.findAll();
@@ -73,6 +74,46 @@ export function createGameUseCases({ gameRepository }) {
 
       return deleted;
     },
+
+    async addQuestionToRound(gameId, payload) {
+      const game = await gameRepository.findById(gameId);
+
+      if (!game) {
+        throw new BusinessError("Partie introuvable.", 404);
+      }
+
+      if (game.status !== "waiting") {
+        throw new BusinessError(
+          "Impossible d'ajouter une question : la partie n'est pas en attente.",
+          409,
+        );
+      }
+
+      const { roundNumber, questionId } = verifyAddQuestionToRound(payload);
+
+      const question = await questionRepository.findById(questionId);
+      if (!question) {
+        throw new BusinessError("Question introuvable.", 404);
+      }
+
+      const contestQuestion = await roundRepository.addQuestionToRound(gameId, {
+        roundNumber,
+        questionId,
+      });
+
+      return contestQuestion;
+    },
+
+    async getGameRounds(gameId) {
+      const game = await gameRepository.findById(gameId);
+
+      if (!game) {
+        throw new BusinessError("Partie introuvable.", 404);
+      }
+
+      return await roundRepository.getRoundsByGame(gameId);
+    },
+
     async joinGame(gameId, payload) {
       const { playerId } = verifyJoinPayload(payload);
       const participant = await gameRepository.join(gameId, playerId);
