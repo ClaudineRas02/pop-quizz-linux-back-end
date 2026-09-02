@@ -1,18 +1,18 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 
-const openApiPath = resolve(process.cwd(), 'docs/openapi.json');
-const openApiDocument = JSON.parse(readFileSync(openApiPath, 'utf8'));
+const openApiPath = resolve(process.cwd(), "docs/openapi.json");
+const openApiDocument = JSON.parse(readFileSync(openApiPath, "utf8"));
 
 // Expose la documentation OpenAPI.
 // Le JSON est utile pour le frontend, Postman, Insomnia ou Swagger Editor.
 export function createOpenApiRoutes(app) {
-  app.get('/api/docs/openapi.json', (req, res) => {
+  app.get("/api/docs/openapi.json", (req, res) => {
     res.status(200).json(openApiDocument);
   });
 
-  app.get('/api/docs', (req, res) => {
-    res.status(200).type('html').send(createDocsHtml());
+  app.get("/api/docs", (req, res) => {
+    res.status(200).type("html").send(createDocsHtml());
   });
 }
 
@@ -142,14 +142,15 @@ function createDocsHtml() {
       </div>
 
       <div class="panel">
-        <h2>WebSocket (temps réel)</h2>
+        <h2>Socket.IO (temps réel)</h2>
         <ul>
-          <li><code>ws://localhost:3000/contest/:id</code> <span class="badge">Connexion</span></li>
-          <li><code>join</code> - Rejoindre le contest</li>
-          <li><code>answer</code> - Soumettre une réponse</li>
-          <li><code>question_start</code> - Nouvelle question (serveur)</li>
-          <li><code>question_end</code> - Fin de question (serveur)</li>
-          <li><code>leaderboard_update</code> - Mise à jour classement (serveur)</li>
+          <li><code>http://localhost:3000</code> <span class="badge">Connexion Socket.IO</span></li>
+          <li><code>join-game</code> ou <code>join-contest</code> - Rejoindre la room <code>game:{id}</code></li>
+          <li><code>game:started</code> - Partie démarrée</li>
+          <li><code>question:opened</code> - Première ou prochaine question ouverte</li>
+          <li><code>question:answer-received</code> - Réponse reçue</li>
+          <li><code>question:closed</code> - Question fermée</li>
+          <li><code>game:ended</code> - Partie terminée</li>
         </ul>
       </div>
 

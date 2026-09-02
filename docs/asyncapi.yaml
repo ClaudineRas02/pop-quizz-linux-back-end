@@ -1,0 +1,349 @@
+asyncapi: 2.6.0
+
+info:
+  title: Pop Quizz Linux Socket API
+  version: 1.0.0
+  description: >
+    Evénements temps réel utilisés par le moteur de jeu.
+
+servers:
+  development:
+    url: localhost:3000
+    protocol: socket.io
+
+channels:
+
+  lobby:
+    description: Room contenant tous les joueurs connectés au plateforme.
+
+  game/{gameId}:
+    parameters:
+      gameId:
+        schema:
+          type: integer
+    description: Room dédiée  pour les joueurs qui ont rejoint une partie.
+
+operations:
+
+  joinLobby:
+    action: receive
+    channel:
+      $ref: '#/channels/lobby'
+    messages:
+      - $ref: '#/components/messages/JoinLobby'
+
+  joinGame:
+    action: receive
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/JoinGame'
+
+  createdGame:
+    action: send
+    channel:
+      $ref: '#/channels/lobby'
+    messages:
+      - $ref: '#/components/messages/GameCreated'
+
+  updatedGame:
+    action: send
+    channel:
+      $ref: '#/channels/lobby'
+    messages:
+      - $ref: '#/components/messages/GameUpdated'
+
+  participantJoined:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/ParticipantJoined'
+
+  gameStarted:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/GameStarted'
+
+  questionOpened:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/QuestionOpened'
+
+  questionClosed:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/QuestionClosed'
+
+  gameEnded:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/GameEnded'
+
+components:
+
+  messages:
+
+    JoinLobby:
+      name: join-lobby
+      payload:
+        type: object
+        properties: {}
+
+    JoinGame:
+      name: join-game
+      payload:
+        type: object
+        properties:
+          gameId:
+            type: integer
+
+    GameCreated:
+      name: created-game
+      payload:
+        type: object
+        properties:
+          game:
+            type: object
+
+    GameUpdated:
+      name: updated-game
+      payload:
+        type: object
+        properties:
+          updatedGame:
+            type: object
+
+    ParticipantJoined:
+      name: game:participant-joined
+      payload:
+        type: object
+        properties:
+          participant:
+            type: object
+
+    GameStarted:
+      name: game:started
+      payload:
+        type: object
+        properties:
+          game:
+            type: object
+
+    QuestionOpened:
+      name: question:opened
+      payload:
+        type: object
+        properties:
+          question:
+            type: object
+
+    QuestionClosed:
+      name: question:closed
+      payload:
+        type: object
+        properties:
+          contestQuestionId:
+            type: integer
+          correctAnswer:
+            oneOf:
+              - type: string
+              - type: array
+              - type: object
+          progress:
+            type: object
+            properties:
+              answeredCount:
+                type: integer
+              totalParticipants:
+                type: integer
+
+    GameEnded:
+      name: game:ended
+      payload:
+        type: object
+        properties:
+          game:
+            type: objectasyncapi: 2.6.0
+
+info:
+  title: Pop Quizz Linux Socket API
+  version: 1.0.0
+  description: >
+    Evénements temps réel utilisés par le moteur de jeu.
+
+servers:
+  development:
+    url: localhost:3000
+    protocol: socket.io
+
+channels:
+
+  lobby:
+    description: Room contenant tous les joueurs connectés.
+
+  game/{gameId}:
+    parameters:
+      gameId:
+        schema:
+          type: integer
+    description: Room dédiée à une partie.
+
+operations:
+
+  joinLobby:
+    action: receive
+    channel:
+      $ref: '#/channels/lobby'
+    messages:
+      - $ref: '#/components/messages/JoinLobby'
+
+  joinGame:
+    action: receive
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/JoinGame'
+
+  createdGame:
+    action: send
+    channel:
+      $ref: '#/channels/lobby'
+    messages:
+      - $ref: '#/components/messages/GameCreated'
+
+  updatedGame:
+    action: send
+    channel:
+      $ref: '#/channels/lobby'
+    messages:
+      - $ref: '#/components/messages/GameUpdated'
+
+  participantJoined:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/ParticipantJoined'
+
+  gameStarted:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/GameStarted'
+
+  questionOpened:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/QuestionOpened'
+
+  questionClosed:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/QuestionClosed'
+
+  gameEnded:
+    action: send
+    channel:
+      $ref: '#/channels/game/{gameId}'
+    messages:
+      - $ref: '#/components/messages/GameEnded'
+
+components:
+
+  messages:
+
+    JoinLobby:
+      name: join-lobby
+      payload:
+        type: object
+        properties: {}
+
+    JoinGame:
+      name: join-game
+      payload:
+        type: object
+        properties:
+          gameId:
+            type: integer
+
+    GameCreated:
+      name: created-game
+      payload:
+        type: object
+        properties:
+          game:
+            type: object
+
+    GameUpdated:
+      name: updated-game
+      payload:
+        type: object
+        properties:
+          updatedGame:
+            type: object
+
+    ParticipantJoined:
+      name: game:participant-joined
+      payload:
+        type: object
+        properties:
+          participant:
+            type: object
+
+    GameStarted:
+      name: game:started
+      payload:
+        type: object
+        properties:
+          game:
+            type: object
+
+    QuestionOpened:
+      name: question:opened
+      payload:
+        type: object
+        properties:
+          question:
+            type: object
+
+    QuestionClosed:
+      name: question:closed
+      payload:
+        type: object
+        properties:
+          contestQuestionId:
+            type: integer
+          correctAnswer:
+            oneOf:
+              - type: string
+              - type: array
+              - type: object
+          progress:
+            type: object
+            properties:
+              answeredCount:
+                type: integer
+              totalParticipants:
+                type: integer
+
+    GameEnded:
+      name: game:ended
+      payload:
+        type: object
+        properties:
+          game:
+            type: object

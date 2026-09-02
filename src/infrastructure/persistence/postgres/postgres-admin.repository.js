@@ -1,153 +1,77 @@
 import { query } from "./db.js";
 import { BusinessError } from "../../../domain/errors/business-error.js";
 
-/**
- * Repository PostgreSQL des admins.
- * Implémente la couche persistence des admins.
- */
 export function createPostgresAdminRepository() {
   return {
-    /**
-     * Retourne tous les admins.
-     */
-    async findAll() {
-      const result = await query(`
-        SELECT
+    async create({ adminId, email, passwordHash }) {
+      const { rows } = await queryWithBusinessErrors(
+        `
+        INSERT INTO public.admin (
           admin_id,
           email,
-          password_hash,
-          created_at
-        FROM public.admin
-        ORDER BY created_at DESC
-      `);
+          password_hash
+        )
+        VALUES ($1, $2, $3)
+        RETURNING *
+        `,
+        [adminId, email, passwordHash],
+      );
 
-      return result.rows.map(toAdmin);
+      return toAdmin(rows[0]);
     },
 
-    /**
-     * Trouve un admin par ID.
-     */
     async findById(adminId) {
-      const result = await query(
+      const { rows } = await query(
         `
-        SELECT
-          admin_id,
-          email,
-          password_hash,
-          created_at
+        SELECT *
         FROM public.admin
         WHERE admin_id = $1
         `,
         [adminId],
       );
 
-      return result.rows[0] ? toAdmin(result.rows[0]) : null;
+      return rows[0] ? toAdmin(rows[0]) : null;
     },
 
-    /**
-     * Trouve un admin par email.
-     */
     async findByEmail(email) {
-      const result = await query(
+      const { rows } = await query(
         `
-        SELECT
-          admin_id,
-          email,
-          password_hash,
-          created_at
+        SELECT *
         FROM public.admin
         WHERE email = $1
         `,
         [email],
       );
 
-      return result.rows[0] ? toAdmin(result.rows[0]) : null;
+      return rows[0] ? toAdmin(rows[0]) : null;
     },
 
-    /**
-     * Sauvegarde un nouvel admin.
-     */
-    async save(admin) {
-      try {
-        const result = await query(
-          `
-          INSERT INTO public.admin (email, password_hash)
-          VALUES ($1, $2)
-          RETURNING admin_id, email, password_hash, created_at
-          `,
-          [admin.email, admin.password_hash],
-        );
-
-        return toAdmin(result.rows[0]);
-      } catch (error) {
-        // Email unique violation
-        if (error.code === "23505") {
-          throw new BusinessError(
-            "Un admin avec cet email existe deja.",
-            409,
-          );
-        }
-
-        throw error;
-      }
-    },
-
-    /**
-     * Mise à jour partielle d’un admin.
-     */
-    async update(adminId, payload) {
-      const result = await query(
+    async findAll() {
+      const { rows } = await query(
         `
-        UPDATE public.admin
-        SET
-          email = COALESCE($2::text, email)
-        WHERE admin_id = $1
-        RETURNING admin_id, email, password_hash, created_at
+        SELECT *
+        FROM public.admin
+        ORDER BY created_at DESC
         `,
-        [adminId, payload.email ?? null],
       );
 
-      return result.rows[0] ? toAdmin(result.rows[0]) : null;
+      return rows.map(toAdmin);
     },
 
-    /**
-     * Mise à jour du password hash uniquement.
-     */
-    async setPasswordHash(adminId, passwordHash) {
-      const result = await query(
-        `
-        UPDATE public.admin
-        SET password_hash = $2
-        WHERE admin_id = $1
-        RETURNING admin_id
-        `,
-        [adminId, passwordHash],
-      );
-
-      return result.rows.length > 0;
-    },
-
-    /**
-     * Suppression d’un admin.
-     */
     async delete(adminId) {
-      const result = await query(
+      const { rowCount } = await query(
         `
         DELETE FROM public.admin
         WHERE admin_id = $1
-        RETURNING admin_id
         `,
         [adminId],
       );
 
-      return result.rows.length > 0;
+      return rowCount > 0;
     },
   };
 }
 
-/**
- * Convertit SQL snake_case → objet métier camelCase
- */
 function toAdmin(row) {
   return {
     adminId: row.admin_id,
@@ -155,4 +79,26 @@ function toAdmin(row) {
     passwordHash: row.password_hash,
     createdAt: row.created_at,
   };
+}
+
+async function queryWithBusinessErrors(sql, params) {
+  try {
+    return await query(sql, params);
+  } catch (error) {
+    if (error.code === "23505") {
+      throw new BusinessError(
+        "Email ou identifiant déjà utilisé.",
+        409,
+      );
+    }
+
+    if (error.code === "23514") {
+      throw new BusinessError(
+        "Violation de contrainte de données.",
+        400,
+      );
+    }
+
+    throw error;
+  }
 }

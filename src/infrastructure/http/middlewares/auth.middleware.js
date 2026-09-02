@@ -1,5 +1,3 @@
-// Middleware d'authentification : vérifie la présence et la validité du token JWT dans les requêtes protégées.
-// Si le token est valide, ajoute les infos de l'utilisateur (id, email, role) à req.user pour que les controllers puissent les utiliser.
 import jwt from "jsonwebtoken";
 import { env } from "../../config/env.js";
 
@@ -26,13 +24,13 @@ export function requireAuth(req, res, next) {
     const payload = jwt.verify(token, env.jwtSecret);
 
     req.user = {
-      id: payload.sub,
+      playerId: payload.playerId,   
       email: payload.email,
-      role: payload.role,
+      role: payload.role || "player", // fallback si pas encore géré
     };
 
     next();
-  } catch {
+  } catch (err) {
     return res.status(401).json({
       message: "Token invalide",
     });

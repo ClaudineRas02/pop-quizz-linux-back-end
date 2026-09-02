@@ -2,15 +2,14 @@
 -- PostgreSQL database dump
 --
 
-\restrict Keis0AwFpNLzFKiC7v7mzXoDfTomZ1Lof01VYasIwyrXwrTWvw63TOF9UwBDvKt
+\restrict bV2LKlfTXXCYPbnlwtsiwfij1f92LYXxYGFPHS9O5gfKT4u9R9F2bcRGTsUnXuI
 
--- Dumped from database version 17.9 (Debian 17.9-0+deb13u1)
--- Dumped by pg_dump version 17.9 (Debian 17.9-0+deb13u1)
+-- Dumped from database version 18.3
+-- Dumped by pg_dump version 18.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -58,40 +57,255 @@ CREATE TYPE public.answer_type AS ENUM (
 );
 
 SET default_tablespace = '';
-
 SET default_table_access_method = heap;
 
 -- =====================================================
--- ADMIN
+-- ID GENERATION FUNCTIONS
 -- =====================================================
 
-CREATE TABLE public.admin (
-    admin_id integer NOT NULL,
-    email character varying(150) NOT NULL,
-    password_hash text NOT NULL,
-    created_at timestamp without time zone DEFAULT now()
-);
+CREATE FUNCTION public.generate_admin_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.admin_id IS NULL THEN
+        NEW.admin_id := 'ADM_' || LPAD(NEXTVAL('seq_admin_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
 
-ALTER TABLE public.admin OWNER TO postgres;
+ALTER FUNCTION public.generate_admin_id() OWNER TO pop_quizz_user;
 
-CREATE SEQUENCE public.admin_admin_id_seq
-    AS integer
+CREATE FUNCTION public.generate_player_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.player_id IS NULL THEN
+        NEW.player_id := 'PLR_' || LPAD(NEXTVAL('seq_player_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_player_id() OWNER TO pop_quizz_user;
+
+CREATE FUNCTION public.generate_question_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.question_id IS NULL THEN
+        NEW.question_id := 'QST_' || LPAD(NEXTVAL('seq_question_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_question_id() OWNER TO pop_quizz_user;
+
+CREATE FUNCTION public.generate_choice_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.choice_id IS NULL THEN
+        NEW.choice_id := 'CHO_' || LPAD(NEXTVAL('seq_choice_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_choice_id() OWNER TO pop_quizz_user;
+
+CREATE FUNCTION public.generate_contest_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.contest_id IS NULL THEN
+        NEW.contest_id := 'CNT_' || LPAD(NEXTVAL('seq_contest_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_contest_id() OWNER TO pop_quizz_user;
+
+CREATE FUNCTION public.generate_contest_player_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.contest_player_id IS NULL THEN
+        NEW.contest_player_id := 'CPL_' || LPAD(NEXTVAL('seq_contest_player_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_contest_player_id() OWNER TO pop_quizz_user;
+
+CREATE FUNCTION public.generate_contest_question_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.contest_question_id IS NULL THEN
+        NEW.contest_question_id := 'CQN_' || LPAD(NEXTVAL('seq_contest_question_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_contest_question_id() OWNER TO pop_quizz_user;
+
+CREATE FUNCTION public.generate_answer_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.answer_id IS NULL THEN
+        NEW.answer_id := 'ANS_' || LPAD(NEXTVAL('seq_answer_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_answer_id() OWNER TO pop_quizz_user;
+
+CREATE FUNCTION public.generate_session_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.session_id IS NULL THEN
+        NEW.session_id := 'SES_' || LPAD(NEXTVAL('seq_session_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_session_id() OWNER TO pop_quizz_user;
+
+CREATE FUNCTION public.generate_challenge_id() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    IF NEW.challenge_id IS NULL THEN
+        NEW.challenge_id := 'CHL_' || LPAD(NEXTVAL('seq_challenge_id')::text, 11, '0');
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+ALTER FUNCTION public.generate_challenge_id() OWNER TO pop_quizz_user;
+
+-- =====================================================
+-- SEQUENCES
+-- =====================================================
+
+CREATE SEQUENCE public.seq_admin_id
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-ALTER SEQUENCE public.admin_admin_id_seq OWNER TO postgres;
+ALTER SEQUENCE public.seq_admin_id OWNER TO pop_quizz_user;
 
-ALTER SEQUENCE public.admin_admin_id_seq OWNED BY public.admin.admin_id;
+CREATE SEQUENCE public.seq_player_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_player_id OWNER TO pop_quizz_user;
+
+CREATE SEQUENCE public.seq_question_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_question_id OWNER TO pop_quizz_user;
+
+CREATE SEQUENCE public.seq_choice_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_choice_id OWNER TO pop_quizz_user;
+
+CREATE SEQUENCE public.seq_contest_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_contest_id OWNER TO pop_quizz_user;
+
+CREATE SEQUENCE public.seq_contest_player_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_contest_player_id OWNER TO pop_quizz_user;
+
+CREATE SEQUENCE public.seq_contest_question_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_contest_question_id OWNER TO pop_quizz_user;
+
+CREATE SEQUENCE public.seq_answer_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_answer_id OWNER TO pop_quizz_user;
+
+CREATE SEQUENCE public.seq_session_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_session_id OWNER TO pop_quizz_user;
+
+CREATE SEQUENCE public.seq_challenge_id
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE public.seq_challenge_id OWNER TO pop_quizz_user;
+
+-- =====================================================
+-- ADMIN
+-- =====================================================
+
+CREATE TABLE public.admin (
+    admin_id character varying(15) NOT NULL,
+    email character varying(150) NOT NULL,
+    password_hash text NOT NULL,
+    created_at timestamp without time zone DEFAULT now()
+);
+
+ALTER TABLE public.admin OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- PLAYER
 -- =====================================================
 
 CREATE TABLE public.player (
-    player_id integer NOT NULL,
+    player_id character varying(15) NOT NULL,
     username character varying(100) NOT NULL,
     email character varying(150),
     password_hash text,
@@ -100,26 +314,14 @@ CREATE TABLE public.player (
     CONSTRAINT player_username_valid CHECK (char_length(username) >= 3)
 );
 
-ALTER TABLE public.player OWNER TO postgres;
-
-CREATE SEQUENCE public.player_player_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.player_player_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.player_player_id_seq OWNED BY public.player.player_id;
+ALTER TABLE public.player OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- QUESTION
 -- =====================================================
 
 CREATE TABLE public.question (
-    question_id integer NOT NULL,
+    question_id character varying(15) NOT NULL,
     statement text NOT NULL,
     category public.question_category NOT NULL,
     type public.question_type NOT NULL,
@@ -132,56 +334,32 @@ CREATE TABLE public.question (
     CONSTRAINT question_points_positive CHECK (points > 0)
 );
 
-ALTER TABLE public.question OWNER TO postgres;
-
-CREATE SEQUENCE public.question_question_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.question_question_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.question_question_id_seq OWNED BY public.question.question_id;
+ALTER TABLE public.question OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- CHOIX DE REPONSE (QCM)
 -- =====================================================
 
 CREATE TABLE public.question_choice (
-    choice_id integer NOT NULL,
-    question_id integer NOT NULL,
+    choice_id character varying(15) NOT NULL,
+    question_id character varying(15) NOT NULL,
     label text NOT NULL,
     content text NOT NULL,
     is_correct boolean DEFAULT false,
     order_index integer NOT NULL
 );
 
-ALTER TABLE public.question_choice OWNER TO postgres;
-
-CREATE SEQUENCE public.question_choice_choice_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.question_choice_choice_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.question_choice_choice_id_seq OWNED BY public.question_choice.choice_id;
+ALTER TABLE public.question_choice OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- CONTEST
 -- =====================================================
 
 CREATE TABLE public.contest (
-    contest_id integer NOT NULL,
+    contest_id character varying(15) NOT NULL,
     title character varying(255) NOT NULL,
     status public.contest_status DEFAULT 'waiting'::public.contest_status,
-    created_by integer,
+    created_by character varying(15),
     total_questions integer DEFAULT 0,
     start_time timestamp without time zone,
     end_time timestamp without time zone,
@@ -194,55 +372,31 @@ CREATE TABLE public.contest (
     CONSTRAINT contest_total_questions_positive CHECK (total_questions >= 0)
 );
 
-ALTER TABLE public.contest OWNER TO postgres;
-
-CREATE SEQUENCE public.contest_contest_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.contest_contest_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.contest_contest_id_seq OWNED BY public.contest.contest_id;
+ALTER TABLE public.contest OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- PARTICIPANTS
 -- =====================================================
 
 CREATE TABLE public.contest_player (
-    contest_player_id integer NOT NULL,
-    contest_id integer NOT NULL,
-    player_id integer NOT NULL,
+    contest_player_id character varying(15) NOT NULL,
+    contest_id character varying(15) NOT NULL,
+    player_id character varying(15) NOT NULL,
     joined_at timestamp without time zone DEFAULT now(),
     is_connected boolean DEFAULT false,
     last_seen timestamp without time zone
 );
 
-ALTER TABLE public.contest_player OWNER TO postgres;
-
-CREATE SEQUENCE public.contest_player_contest_player_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.contest_player_contest_player_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.contest_player_contest_player_id_seq OWNED BY public.contest_player.contest_player_id;
+ALTER TABLE public.contest_player OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- QUESTIONS DU CONTEST
 -- =====================================================
 
 CREATE TABLE public.contest_question (
-    contest_question_id integer NOT NULL,
-    contest_id integer NOT NULL,
-    question_id integer NOT NULL,
+    contest_question_id character varying(15) NOT NULL,
+    contest_id character varying(15) NOT NULL,
+    question_id character varying(15) NOT NULL,
     round_number integer NOT NULL,
     order_index integer NOT NULL,
     status public.contest_question_status DEFAULT 'waiting'::public.contest_question_status,
@@ -256,28 +410,16 @@ CREATE TABLE public.contest_question (
     )
 );
 
-ALTER TABLE public.contest_question OWNER TO postgres;
-
-CREATE SEQUENCE public.contest_question_contest_question_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.contest_question_contest_question_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.contest_question_contest_question_id_seq OWNED BY public.contest_question.contest_question_id;
+ALTER TABLE public.contest_question OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- REPONSES (flexible avec JSONB)
 -- =====================================================
 
 CREATE TABLE public.answer (
-    answer_id integer NOT NULL,
-    contest_question_id integer NOT NULL,
-    player_id integer NOT NULL,
+    answer_id character varying(15) NOT NULL,
+    contest_question_id character varying(15) NOT NULL,
+    player_id character varying(15) NOT NULL,
     answer_value jsonb NOT NULL,
     answer_type public.answer_type NOT NULL,
     is_correct boolean DEFAULT false,
@@ -295,55 +437,31 @@ CREATE TABLE public.answer (
     )
 );
 
-ALTER TABLE public.answer OWNER TO postgres;
-
-CREATE SEQUENCE public.answer_answer_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.answer_answer_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.answer_answer_id_seq OWNED BY public.answer.answer_id;
+ALTER TABLE public.answer OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- SESSION SOCKET
 -- =====================================================
 
 CREATE TABLE public.contest_session (
-    session_id integer NOT NULL,
-    contest_id integer NOT NULL,
-    player_id integer NOT NULL,
+    session_id character varying(15) NOT NULL,
+    contest_id character varying(15) NOT NULL,
+    player_id character varying(15) NOT NULL,
     socket_id character varying(255) NOT NULL,
     connected_at timestamp without time zone DEFAULT now(),
     disconnected_at timestamp without time zone,
     CONSTRAINT session_time_check CHECK (disconnected_at IS NULL OR disconnected_at >= connected_at)
 );
 
-ALTER TABLE public.contest_session OWNER TO postgres;
-
-CREATE SEQUENCE public.contest_session_session_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.contest_session_session_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.contest_session_session_id_seq OWNED BY public.contest_session.session_id;
+ALTER TABLE public.contest_session OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- 2FA POUR LE CLASSEMENT FINAL
 -- =====================================================
 
 CREATE TABLE public.two_factor_challenge (
-    challenge_id integer NOT NULL,
-    player_id integer NOT NULL,
+    challenge_id character varying(15) NOT NULL,
+    player_id character varying(15) NOT NULL,
     command text NOT NULL,
     expected_answer text NOT NULL,
     validated boolean DEFAULT false,
@@ -352,19 +470,7 @@ CREATE TABLE public.two_factor_challenge (
     CONSTRAINT challenge_expiration_check CHECK (expires_at > created_at)
 );
 
-ALTER TABLE public.two_factor_challenge OWNER TO postgres;
-
-CREATE SEQUENCE public.two_factor_challenge_challenge_id_seq
-    AS integer
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE public.two_factor_challenge_challenge_id_seq OWNER TO postgres;
-
-ALTER SEQUENCE public.two_factor_challenge_challenge_id_seq OWNED BY public.two_factor_challenge.challenge_id;
+ALTER TABLE public.two_factor_challenge OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- EVENT LOG (audit simplifié)
@@ -372,28 +478,13 @@ ALTER SEQUENCE public.two_factor_challenge_challenge_id_seq OWNED BY public.two_
 
 CREATE TABLE public.game_event_log (
     event_id bigserial NOT NULL,
-    contest_id integer NOT NULL,
+    contest_id character varying(15) NOT NULL,
     event_type character varying(50) NOT NULL,
     event_data jsonb NOT NULL,
     created_at timestamp without time zone DEFAULT now()
 );
 
-ALTER TABLE public.game_event_log OWNER TO postgres;
-
--- =====================================================
--- DEFAULT VALUES
--- =====================================================
-
-ALTER TABLE ONLY public.admin ALTER COLUMN admin_id SET DEFAULT nextval('public.admin_admin_id_seq'::regclass);
-ALTER TABLE ONLY public.player ALTER COLUMN player_id SET DEFAULT nextval('public.player_player_id_seq'::regclass);
-ALTER TABLE ONLY public.question ALTER COLUMN question_id SET DEFAULT nextval('public.question_question_id_seq'::regclass);
-ALTER TABLE ONLY public.question_choice ALTER COLUMN choice_id SET DEFAULT nextval('public.question_choice_choice_id_seq'::regclass);
-ALTER TABLE ONLY public.contest ALTER COLUMN contest_id SET DEFAULT nextval('public.contest_contest_id_seq'::regclass);
-ALTER TABLE ONLY public.contest_player ALTER COLUMN contest_player_id SET DEFAULT nextval('public.contest_player_contest_player_id_seq'::regclass);
-ALTER TABLE ONLY public.contest_question ALTER COLUMN contest_question_id SET DEFAULT nextval('public.contest_question_contest_question_id_seq'::regclass);
-ALTER TABLE ONLY public.answer ALTER COLUMN answer_id SET DEFAULT nextval('public.answer_answer_id_seq'::regclass);
-ALTER TABLE ONLY public.contest_session ALTER COLUMN session_id SET DEFAULT nextval('public.contest_session_session_id_seq'::regclass);
-ALTER TABLE ONLY public.two_factor_challenge ALTER COLUMN challenge_id SET DEFAULT nextval('public.two_factor_challenge_challenge_id_seq'::regclass);
+ALTER TABLE public.game_event_log OWNER TO pop_quizz_user;
 
 -- =====================================================
 -- CONSTRAINTS
@@ -443,11 +534,10 @@ ALTER TABLE ONLY public.contest_question
 ALTER TABLE ONLY public.answer
     ADD CONSTRAINT answer_pkey PRIMARY KEY (answer_id);
 
--- UNIQUE constraint prevents duplicate answers (concurrency-safe)
 ALTER TABLE ONLY public.answer
     ADD CONSTRAINT answer_unique UNIQUE (contest_question_id, player_id);
 
--- Unique index for first_blood (concurrency-safe)
+-- Unique index for first_blood
 CREATE UNIQUE INDEX unique_first_blood_per_question
     ON public.answer(contest_question_id)
     WHERE first_blood = true;
@@ -513,50 +603,66 @@ ALTER TABLE ONLY public.game_event_log
     REFERENCES public.contest(contest_id) ON DELETE CASCADE;
 
 -- =====================================================
--- INDEXES (optimisés pour production)
+-- INDEXES
 -- =====================================================
 
--- Question
 CREATE INDEX idx_question_category ON public.question(category);
 CREATE INDEX idx_question_type ON public.question(type);
-
--- Question Choice
 CREATE INDEX idx_question_choice_question ON public.question_choice(question_id);
-
--- Contest
 CREATE INDEX idx_contest_status ON public.contest(status);
-
--- Contest Player
 CREATE INDEX idx_contest_player_contest ON public.contest_player(contest_id);
 CREATE INDEX idx_contest_player_player ON public.contest_player(player_id);
-
--- Contest Question
 CREATE INDEX idx_contest_question_contest ON public.contest_question(contest_id);
 CREATE INDEX idx_contest_question_status ON public.contest_question(status);
 CREATE INDEX idx_contest_question_order ON public.contest_question(order_index);
-
--- Answer (indexes pour les views)
 CREATE INDEX idx_answer_contest_question ON public.answer(contest_question_id);
 CREATE INDEX idx_answer_player ON public.answer(player_id);
 CREATE INDEX idx_answer_submitted ON public.answer(submitted_at);
 CREATE INDEX idx_answer_contest_question_player ON public.answer(contest_question_id, player_id);
-
--- Contest Session
 CREATE INDEX idx_contest_session_contest ON public.contest_session(contest_id);
-
--- Two Factor Challenge
 CREATE INDEX idx_two_factor_challenge_player ON public.two_factor_challenge(player_id);
 CREATE INDEX idx_two_factor_challenge_expires ON public.two_factor_challenge(expires_at);
-
--- Game Event Log
 CREATE INDEX idx_game_event_log_contest ON public.game_event_log(contest_id);
 CREATE INDEX idx_game_event_log_created ON public.game_event_log(created_at);
 
 -- =====================================================
--- VIEWS (source de vérité - calculs déterministes)
+-- TRIGGERS FOR ID GENERATION
 -- =====================================================
 
--- View: Player total score (computed from answers)
+CREATE TRIGGER tg_admin_id BEFORE INSERT ON public.admin 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_admin_id();
+
+CREATE TRIGGER tg_player_id BEFORE INSERT ON public.player 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_player_id();
+
+CREATE TRIGGER tg_question_id BEFORE INSERT ON public.question 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_question_id();
+
+CREATE TRIGGER tg_choice_id BEFORE INSERT ON public.question_choice 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_choice_id();
+
+CREATE TRIGGER tg_contest_id BEFORE INSERT ON public.contest 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_contest_id();
+
+CREATE TRIGGER tg_contest_player_id BEFORE INSERT ON public.contest_player 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_contest_player_id();
+
+CREATE TRIGGER tg_contest_question_id BEFORE INSERT ON public.contest_question 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_contest_question_id();
+
+CREATE TRIGGER tg_answer_id BEFORE INSERT ON public.answer 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_answer_id();
+
+CREATE TRIGGER tg_session_id BEFORE INSERT ON public.contest_session 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_session_id();
+
+CREATE TRIGGER tg_challenge_id BEFORE INSERT ON public.two_factor_challenge 
+    FOR EACH ROW EXECUTE FUNCTION public.generate_challenge_id();
+
+-- =====================================================
+-- VIEWS
+-- =====================================================
+
 CREATE OR REPLACE VIEW public.v_player_score AS
 SELECT 
     p.player_id,
@@ -572,7 +678,6 @@ FROM public.player p
 LEFT JOIN public.answer a ON p.player_id = a.player_id
 GROUP BY p.player_id, p.username, p.email, p.avatar_url;
 
--- View: Contest player scores (computed from answers)
 CREATE OR REPLACE VIEW public.v_contest_player_score AS
 SELECT 
     cp.contest_id,
@@ -599,7 +704,6 @@ LEFT JOIN public.answer a ON cp.player_id = a.player_id
     )
 GROUP BY cp.contest_id, cp.player_id, p.username, p.avatar_url;
 
--- View: Contest question statistics
 CREATE OR REPLACE VIEW public.v_contest_question_stats AS
 SELECT 
     cq.contest_question_id,
@@ -624,11 +728,7 @@ GROUP BY cq.contest_question_id, cq.contest_id, cq.question_id, cq.round_number,
          cq.order_index, cq.status, cq.opened_at, cq.closed_at, q.statement, q.points, q.duration;
 
 -- =====================================================
--- TRIGGERS (simplifiés - uniquement validation et logging)
--- =====================================================
-
--- =====================================================
--- 1. Validate question is open before answer
+-- TRIGGER FUNCTIONS FOR BUSINESS LOGIC
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION public.validate_question_open()
@@ -648,16 +748,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-ALTER FUNCTION public.validate_question_open() OWNER TO postgres;
-
-CREATE TRIGGER trigger_validate_question_open
-    BEFORE INSERT ON public.answer
-    FOR EACH ROW
-    EXECUTE FUNCTION public.validate_question_open();
-
--- =====================================================
--- 2. Validate answer is within timeout
--- =====================================================
+ALTER FUNCTION public.validate_question_open() OWNER TO pop_quizz_user;
 
 CREATE OR REPLACE FUNCTION public.validate_timeout()
 RETURNS TRIGGER AS $$
@@ -679,16 +770,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-ALTER FUNCTION public.validate_timeout() OWNER TO postgres;
-
-CREATE TRIGGER trigger_validate_timeout
-    BEFORE INSERT ON public.answer
-    FOR EACH ROW
-    EXECUTE FUNCTION public.validate_timeout();
-
--- =====================================================
--- 3. Log answer event (audit only)
--- =====================================================
+ALTER FUNCTION public.validate_timeout() OWNER TO pop_quizz_user;
 
 CREATE OR REPLACE FUNCTION public.log_answer_event()
 RETURNS TRIGGER AS $$
@@ -713,16 +795,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-ALTER FUNCTION public.log_answer_event() OWNER TO postgres;
-
-CREATE TRIGGER trigger_log_answer_event
-    AFTER INSERT ON public.answer
-    FOR EACH ROW
-    EXECUTE FUNCTION public.log_answer_event();
-
--- =====================================================
--- 4. Auto-close question on timeout (cron job function)
--- =====================================================
+ALTER FUNCTION public.log_answer_event() OWNER TO pop_quizz_user;
 
 CREATE OR REPLACE FUNCTION public.auto_close_expired_questions()
 RETURNS void AS $$
@@ -738,11 +811,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-ALTER FUNCTION public.auto_close_expired_questions() OWNER TO postgres;
-
--- =====================================================
--- 5. Clean expired 2FA challenges
--- =====================================================
+ALTER FUNCTION public.auto_close_expired_questions() OWNER TO pop_quizz_user;
 
 CREATE OR REPLACE FUNCTION public.clean_expired_challenges()
 RETURNS void AS $$
@@ -753,26 +822,44 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-ALTER FUNCTION public.clean_expired_challenges() OWNER TO postgres;
+ALTER FUNCTION public.clean_expired_challenges() OWNER TO pop_quizz_user;
+
+-- =====================================================
+-- BUSINESS LOGIC TRIGGERS
+-- =====================================================
+
+CREATE TRIGGER trigger_validate_question_open
+    BEFORE INSERT ON public.answer
+    FOR EACH ROW
+    EXECUTE FUNCTION public.validate_question_open();
+
+CREATE TRIGGER trigger_validate_timeout
+    BEFORE INSERT ON public.answer
+    FOR EACH ROW
+    EXECUTE FUNCTION public.validate_timeout();
+
+CREATE TRIGGER trigger_log_answer_event
+    AFTER INSERT ON public.answer
+    FOR EACH ROW
+    EXECUTE FUNCTION public.log_answer_event();
 
 -- =====================================================
 -- SEQUENCE RESET
 -- =====================================================
 
-SELECT pg_catalog.setval('public.admin_admin_id_seq', 1, false);
-SELECT pg_catalog.setval('public.player_player_id_seq', 1, false);
-SELECT pg_catalog.setval('public.question_question_id_seq', 1, false);
-SELECT pg_catalog.setval('public.question_choice_choice_id_seq', 1, false);
-SELECT pg_catalog.setval('public.contest_contest_id_seq', 1, false);
-SELECT pg_catalog.setval('public.contest_player_contest_player_id_seq', 1, false);
-SELECT pg_catalog.setval('public.contest_question_contest_question_id_seq', 1, false);
-SELECT pg_catalog.setval('public.answer_answer_id_seq', 1, false);
-SELECT pg_catalog.setval('public.contest_session_session_id_seq', 1, false);
-SELECT pg_catalog.setval('public.two_factor_challenge_challenge_id_seq', 1, false);
-SELECT pg_catalog.setval('public.game_event_log_event_id_seq', 1, false);
+SELECT pg_catalog.setval('public.seq_admin_id', 1, false);
+SELECT pg_catalog.setval('public.seq_player_id', 1, false);
+SELECT pg_catalog.setval('public.seq_question_id', 1, false);
+SELECT pg_catalog.setval('public.seq_choice_id', 1, false);
+SELECT pg_catalog.setval('public.seq_contest_id', 1, false);
+SELECT pg_catalog.setval('public.seq_contest_player_id', 1, false);
+SELECT pg_catalog.setval('public.seq_contest_question_id', 1, false);
+SELECT pg_catalog.setval('public.seq_answer_id', 1, false);
+SELECT pg_catalog.setval('public.seq_session_id', 1, false);
+SELECT pg_catalog.setval('public.seq_challenge_id', 1, false);
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Keis0AwFpNLzFKiC7v7mzXoDfTomZ1Lof01VYasIwyrXwrTWvw63TOF9UwBDvKt
+\unrestrict bV2LKlfTXXCYPbnlwtsiwfij1f92LYXxYGFPHS9O5gfKT4u9R9F2bcRGTsUnXuI

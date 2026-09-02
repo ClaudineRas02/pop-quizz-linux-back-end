@@ -3,6 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 
 import { createApp } from "./infrastructure/http/app.js";
+import { setRealtimeServer } from "./shared/realtime-event-bus.js";
 
 // Load environment variables
 dotenv.config();
@@ -21,13 +22,18 @@ const io = new Server(server, {
   },
 });
 
-// Socket events
+app.locals.io = io;
+setRealtimeServer(io);
+
+//connect to socket.io
 io.on("connection", (socket) => {
   console.log(`Client connecté: ${socket.id}`);
+  //room lobby: pour tous les clients connectés, pour les notifications de parties
+  socket.join("lobby");
 
-  // Example: join a live contest room (future CP feature)
-  socket.on("join-contest", (contestId) => {
-    socket.join(contestId);
+  //room game: pour les clients connectés à une partie spécifique, pour les notifications de la partie
+  socket.on("join-game", (gameId) => {
+    socket.join(`game:${gameId}`);
   });
 
   socket.on("disconnect", () => {

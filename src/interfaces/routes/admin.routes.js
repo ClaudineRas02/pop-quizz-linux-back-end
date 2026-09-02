@@ -7,9 +7,24 @@ export function createAdminRoutes(modules) {
   const router = Router();
 
   router.use(
-    "/admin",
-    lazyRouteMount(() => modules.adminuser.getAdminRoutes()),
+    "/",
+    lazyRouteMount(() => modules.admin.getAdminRoutes()),
   );
-  
+
+  router.use(
+    "/game",
+    lazyRouteMount(() => modules.game.getAdminRoutes()),
+  );
+
+  router.use(
+    "/players",
+    lazyRouteMount(() => modules.player.getAdminRoutes()),
+  );
+
+  router.use(
+    "/questions",
+    lazyRouteMount(() => modules.question.getAdminRoutes()),
+  );
+
   return router;
 }
