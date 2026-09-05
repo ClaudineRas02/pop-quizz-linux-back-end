@@ -24,7 +24,7 @@ export function requireAuth(req, res, next) {
     const payload = jwt.verify(token, env.jwtSecret);
 
     req.user = {
-      playerId: payload.playerId,   
+      playerId: payload.playerId,
       email: payload.email,
       role: payload.role || "player", // fallback si pas encore géré
     };
@@ -33,6 +33,7 @@ export function requireAuth(req, res, next) {
   } catch (err) {
     return res.status(401).json({
       message: "Token invalide",
+      error: err.message,
     });
   }
 }

@@ -1,4 +1,4 @@
-import { ok, created, noContent } from "../utils/success.js";
+import { ok, created } from "../utils/success.js";
 
 export function createAdminController(adminUseCases) {
   return {

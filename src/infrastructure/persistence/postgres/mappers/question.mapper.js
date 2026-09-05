@@ -106,3 +106,10 @@ export function toQuestionStats(row) {
     incorrectRate: Number(row.incorrect_rate),
   };
 }
+
+function toProgress(row = {}) {
+  return {
+    answeredCount: Number(row.answered_count ?? 0),
+    totalParticipants: Number(row.total_participants ?? 0),
+  };
+}
