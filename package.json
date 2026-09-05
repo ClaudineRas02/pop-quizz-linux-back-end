@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "test": "node --test tests/**/*.test.js",
+    "lint": "eslint .",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
     "dev": "nodemon src/server.js",
     "db:setup": "psql \"$DATABASE_URL\" -f database/schema.sql"
   },
@@ -23,6 +24,11 @@
     "socket.io": "^4.8.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "jest": "^30.5.1",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }
