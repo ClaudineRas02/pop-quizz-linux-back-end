@@ -43,7 +43,7 @@ jobs:
         run: npm test -- --coverage
 
       - name: Sonar scan
-        uses: sonarsource/sonarcloud-github-action@v4
+        uses: SonarSource/sonarqube-scan-action@v7
         with:
           projectBaseDir: .
         env:
