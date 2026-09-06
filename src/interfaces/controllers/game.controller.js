@@ -61,7 +61,7 @@ export function createGameController({
       return ok(result);
     },
 
-    async joinGame({ params, body, user }) {
+    async joinGame({ params, user }) {
       const result = await gameUseCases.joinGame(params.gameId, {
         playerId: user.playerId,
       });

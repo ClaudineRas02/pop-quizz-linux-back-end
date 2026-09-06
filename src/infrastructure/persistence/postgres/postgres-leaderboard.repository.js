@@ -1,5 +1,4 @@
 import { query } from "./db.js";
-import { BusinessError } from "../../../domain/errors/business-error.js";
 import { toLeaderboardRow } from "./mappers/leaderboard.mapper.js";
 
 export function createPostgresLeaderboardRepository() {

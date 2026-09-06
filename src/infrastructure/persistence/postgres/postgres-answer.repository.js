@@ -1,6 +1,7 @@
 // postgres-answer.repository.js
 import { pool } from "./db.js";
 import { toAnswer } from "./mappers/answer.mapper.js";
+import { toProgress } from "./mappers/question.mapper.js";
 
 export function createPostgresAnswerRepository() {
   return {
@@ -133,12 +134,5 @@ function toQuestion(row) {
     points: row.points,
     duration: row.duration,
     correctAnswer: row.correct_answer,
-  };
-}
-
-function toProgress(row = {}) {
-  return {
-    answeredCount: Number(row.answered_count ?? 0),
-    totalParticipants: Number(row.total_participants ?? 0),
   };
 }

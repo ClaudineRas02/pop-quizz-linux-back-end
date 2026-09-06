@@ -1,3 +1,4 @@
+import { ok } from "../../shared/http-response.js";
 export function createLeaderboardController({ leaderboardUseCases }) {
   return {
     async getLeaderboard({ params }) {

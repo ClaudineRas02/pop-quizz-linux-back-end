@@ -31,7 +31,7 @@ export function requireAdmin(req, res, next) {
     }
 
     req.user = {
-      adminId: payload.adminId,   // IMPORTANT: adminId côté JWT
+      adminId: payload.adminId, // IMPORTANT: adminId côté JWT
       email: payload.email,
       role: payload.role,
     };
@@ -40,6 +40,7 @@ export function requireAdmin(req, res, next) {
   } catch (err) {
     return res.status(401).json({
       message: "Token invalide",
+      error: err.message,
     });
   }
 }

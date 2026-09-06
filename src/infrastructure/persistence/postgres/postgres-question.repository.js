@@ -2,7 +2,6 @@ import {
   toContestQuestion,
   toQuestion,
   toQuestionWithChoices,
-  toChoice,
 } from "./mappers/question.mapper.js";
 import { query, beginTransaction } from "./db.js";
 

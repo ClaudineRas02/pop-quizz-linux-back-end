@@ -1,33 +1,33 @@
-import { describe, it, mock } from "node:test";
+import { describe, it, jest } from "@jest/globals";
 import assert from "node:assert/strict";
 import { createGameUseCases } from "../../src/application/use-cases/game.use-case.js";
 import { BusinessError } from "../../src/domain/errors/business-error.js";
 
 function mockGameRepository(overrides = {}) {
   return {
-    findById: mock.fn(async () => null),
-    findAll: mock.fn(async () => []),
-    create: mock.fn(async () => ({})),
-    update: mock.fn(async () => ({})),
-    delete: mock.fn(async () => true),
-    start: mock.fn(async () => ({})),
-    end: mock.fn(async () => ({})),
-    join: mock.fn(async () => ({})),
+    findById: jest.fn(async () => null),
+    findAll: jest.fn(async () => []),
+    create: jest.fn(async () => ({})),
+    update: jest.fn(async () => ({})),
+    delete: jest.fn(async () => true),
+    start: jest.fn(async () => ({})),
+    end: jest.fn(async () => ({})),
+    join: jest.fn(async () => ({})),
     ...overrides,
   };
 }
 
 function mockQuestionRepository(overrides = {}) {
   return {
-    findById: mock.fn(async () => null),
+    findById: jest.fn(async () => null),
     ...overrides,
   };
 }
 
 function mockRoundRepository(overrides = {}) {
   return {
-    addQuestionToRound: mock.fn(async () => ({})),
-    getRoundsByGame: mock.fn(async () => []),
+    addQuestionToRound: jest.fn(async () => ({})),
+    getRoundsByGame: jest.fn(async () => []),
     ...overrides,
   };
 }
@@ -58,13 +58,13 @@ const CONTEST_QUESTION = {
 describe("addQuestionToRound", () => {
   it("ajoute une question a un round avec succes", async () => {
     const gameRepo = mockGameRepository({
-      findById: mock.fn(async () => GAME_WAITING),
+      findById: jest.fn(async () => GAME_WAITING),
     });
     const questionRepo = mockQuestionRepository({
-      findById: mock.fn(async () => QUESTION),
+      findById: jest.fn(async () => QUESTION),
     });
     const roundRepo = mockRoundRepository({
-      addQuestionToRound: mock.fn(async () => CONTEST_QUESTION),
+      addQuestionToRound: jest.fn(async () => CONTEST_QUESTION),
     });
 
     const useCases = makeUseCases({
@@ -80,7 +80,7 @@ describe("addQuestionToRound", () => {
 
     assert.equal(result.contestQuestionId, "CQN_1");
     assert.equal(result.roundNumber, 1);
-    assert.equal(roundRepo.addQuestionToRound.mock.callCount(), 1);
+    assert.equal(roundRepo.addQuestionToRound.mock.calls.length, 1);
   });
 
   it("lance 404 si la partie n'existe pas", async () => {
@@ -97,10 +97,10 @@ describe("addQuestionToRound", () => {
 
   it("lance 409 si la partie n'est pas en attente", async () => {
     const gameRepo = mockGameRepository({
-      findById: mock.fn(async () => GAME_RUNNING),
+      findById: jest.fn(async () => GAME_RUNNING),
     });
     const questionRepo = mockQuestionRepository({
-      findById: mock.fn(async () => QUESTION),
+      findById: jest.fn(async () => QUESTION),
     });
     const roundRepo = mockRoundRepository();
 
@@ -121,10 +121,10 @@ describe("addQuestionToRound", () => {
 
   it("lance 404 si la question n'existe pas", async () => {
     const gameRepo = mockGameRepository({
-      findById: mock.fn(async () => GAME_WAITING),
+      findById: jest.fn(async () => GAME_WAITING),
     });
     const questionRepo = mockQuestionRepository({
-      findById: mock.fn(async () => null),
+      findById: jest.fn(async () => null),
     });
 
     const useCases = makeUseCases({
@@ -182,10 +182,10 @@ describe("addQuestionToRound", () => {
 describe("getGameRounds", () => {
   it("retourne les rounds d'une partie", async () => {
     const gameRepo = mockGameRepository({
-      findById: mock.fn(async () => GAME_WAITING),
+      findById: jest.fn(async () => GAME_WAITING),
     });
     const roundRepo = mockRoundRepository({
-      getRoundsByGame: mock.fn(async () => [CONTEST_QUESTION]),
+      getRoundsByGame: jest.fn(async () => [CONTEST_QUESTION]),
     });
 
     const useCases = makeUseCases({

@@ -1,36 +1,36 @@
-import { describe, it, mock } from "node:test";
+import { describe, it, jest } from "@jest/globals";
 import assert from "node:assert/strict";
 import { createQuestionUseCases } from "../../src/application/use-cases/questions.use-cases.js";
 import { BusinessError } from "../../src/domain/errors/business-error.js";
 
 function mockQuestionRepository(overrides = {}) {
   return {
-    findAll: mock.fn(async () => []),
-    findById: mock.fn(async () => null),
-    create: mock.fn(async (data) => ({ questionId: "QST_00000000001", ...data })),
-    update: mock.fn(async (id, data) => ({ questionId: id, ...data })),
-    delete: mock.fn(async () => true),
-    findOpenedQuestion: mock.fn(async () => null),
-    findNextWaitingQuestion: mock.fn(async () => null),
-    openQuestion: mock.fn(async () => {}),
-    closeQuestion: mock.fn(async () => ({})),
-    getQuestionProgress: mock.fn(async () => ({ totalParticipants: 0, answeredCount: 0 })),
-    findCurrentQuestionForStatistics: mock.fn(async () => null),
+    findAll: jest.fn(async () => []),
+    findById: jest.fn(async () => null),
+    create: jest.fn(async (data) => ({ questionId: "QST_00000000001", ...data })),
+    update: jest.fn(async (id, data) => ({ questionId: id, ...data })),
+    delete: jest.fn(async () => true),
+    findOpenedQuestion: jest.fn(async () => null),
+    findNextWaitingQuestion: jest.fn(async () => null),
+    openQuestion: jest.fn(async () => {}),
+    closeQuestion: jest.fn(async () => ({})),
+    getQuestionProgress: jest.fn(async () => ({ totalParticipants: 0, answeredCount: 0 })),
+    findCurrentQuestionForStatistics: jest.fn(async () => null),
     ...overrides,
   };
 }
 
 function mockGameRepository(overrides = {}) {
   return {
-    findById: mock.fn(async () => null),
+    findById: jest.fn(async () => null),
     ...overrides,
   };
 }
 
 function mockStatisticRepository(overrides = {}) {
   return {
-    getQuestionStatistics: mock.fn(async () => null),
-    markStatsViewed: mock.fn(async () => null),
+    getQuestionStatistics: jest.fn(async () => null),
+    markStatsViewed: jest.fn(async () => null),
     ...overrides,
   };
 }
@@ -67,7 +67,7 @@ describe("listQuestions", () => {
   it("retourne la liste du repository", async () => {
     const q1 = { questionId: "QST_00000000001", statement: "Q1" };
     const repo = mockQuestionRepository({
-      findAll: mock.fn(async () => [q1]),
+      findAll: jest.fn(async () => [q1]),
     });
     const useCases = makeUseCases({ questionRepository: repo });
 
@@ -85,7 +85,7 @@ describe("getQuestionById", () => {
   it("retourne la question si elle existe", async () => {
     const q = { questionId: "QST_00000000001", statement: "Q?" };
     const repo = mockQuestionRepository({
-      findById: mock.fn(async () => q),
+      findById: jest.fn(async () => q),
     });
     const useCases = makeUseCases({ questionRepository: repo });
 
@@ -114,7 +114,7 @@ describe("createQuestion", () => {
     const result = await useCases.createQuestion(validPayload());
     assert.equal(result.questionId, "QST_00000000001");
     assert.equal(result.statement, "Quel cmd list les fichiers ?");
-    assert.equal(repo.create.mock.callCount(), 1);
+    assert.equal(repo.create.mock.calls.length, 1);
   });
 
   it("rejette des donnees invalides", async () => {
@@ -133,8 +133,8 @@ describe("createQuestion", () => {
 describe("updateQuestion", () => {
   it("met a jour une question existante", async () => {
     const repo = mockQuestionRepository({
-      findById: mock.fn(async () => ({ questionId: "QST_00000000001", statement: "Old" })),
-      update: mock.fn(async (id, data) => ({ questionId: id, ...data })),
+      findById: jest.fn(async () => ({ questionId: "QST_00000000001", statement: "Old" })),
+      update: jest.fn(async (id, data) => ({ questionId: id, ...data })),
     });
     const useCases = makeUseCases({ questionRepository: repo });
 
@@ -142,7 +142,7 @@ describe("updateQuestion", () => {
       statement: "New statement",
     });
     assert.equal(result.statement, "New statement");
-    assert.equal(repo.update.mock.callCount(), 1);
+    assert.equal(repo.update.mock.calls.length, 1);
   });
 
   it("lance 404 si la question n'existe pas", async () => {
@@ -155,7 +155,7 @@ describe("updateQuestion", () => {
 
   it("rejette des donnees invalides", async () => {
     const repo = mockQuestionRepository({
-      findById: mock.fn(async () => ({ questionId: "QST_00000000001" })),
+      findById: jest.fn(async () => ({ questionId: "QST_00000000001" })),
     });
     const useCases = makeUseCases({ questionRepository: repo });
 
@@ -173,14 +173,14 @@ describe("updateQuestion", () => {
 describe("deleteQuestion", () => {
   it("supprime une question existante", async () => {
     const repo = mockQuestionRepository({
-      findById: mock.fn(async () => ({ questionId: "QST_00000000001" })),
-      delete: mock.fn(async () => true),
+      findById: jest.fn(async () => ({ questionId: "QST_00000000001" })),
+      delete: jest.fn(async () => true),
     });
     const useCases = makeUseCases({ questionRepository: repo });
 
     const result = await useCases.deleteQuestion("QST_00000000001");
     assert.equal(result, true);
-    assert.equal(repo.delete.mock.callCount(), 1);
+    assert.equal(repo.delete.mock.calls.length, 1);
   });
 
   it("lance 404 si la question n'existe pas", async () => {

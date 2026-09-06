@@ -3,18 +3,17 @@ import { BusinessError } from "../../../domain/errors/business-error.js";
 
 export function createPostgresAdminRepository() {
   return {
-    async create({ adminId, email, passwordHash }) {
+    async create({ email, passwordHash }) {
       const { rows } = await queryWithBusinessErrors(
         `
         INSERT INTO public.admin (
-          admin_id,
           email,
           password_hash
         )
-        VALUES ($1, $2, $3)
+        VALUES ($1, $2)
         RETURNING *
         `,
-        [adminId, email, passwordHash],
+        [email, passwordHash],
       );
 
       return toAdmin(rows[0]);
@@ -86,17 +85,11 @@ async function queryWithBusinessErrors(sql, params) {
     return await query(sql, params);
   } catch (error) {
     if (error.code === "23505") {
-      throw new BusinessError(
-        "Email ou identifiant déjà utilisé.",
-        409,
-      );
+      throw new BusinessError("Email ou identifiant déjà utilisé.", 409);
     }
 
     if (error.code === "23514") {
-      throw new BusinessError(
-        "Violation de contrainte de données.",
-        400,
-      );
+      throw new BusinessError("Violation de contrainte de données.", 400);
     }
 
     throw error;
