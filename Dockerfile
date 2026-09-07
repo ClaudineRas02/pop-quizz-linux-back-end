@@ -16,6 +16,7 @@ ENV NODE_ENV=production
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY package.json ./
 COPY src ./src
+COPY docs ./docs
 
 # The official Node image provides this unprivileged user.
 USER node
