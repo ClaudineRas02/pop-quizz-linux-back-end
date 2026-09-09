@@ -7,11 +7,15 @@
 //   res.status(statusCode).json({ message });
 // }
 
-export function errorMiddleware(err, req, res) {
+export function errorMiddleware(err, req, res, next) {
   console.error("ERROR STACK:", err);
+
+  if (res.headersSent) {
+    return next(err);
+  }
 
   res.status(err.statusCode || 500).json({
     message: err.message || "Erreur interne du serveur.",
-    stack: err.stack, // uniquement en dev
+    stack: err.stack,
   });
 }
