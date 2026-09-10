@@ -1,4 +1,5 @@
 export function ok(data) {
+  console.log("ok function called with data:", data); // Debugging line
   return {
     statusCode: 200,
     body: { data },
